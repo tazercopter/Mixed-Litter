@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:chicken",
+  "texture": "mixed_litter:entity/chicken",
+  "baby_texture": "mixed_litter:entity/chicken_baby"
+}

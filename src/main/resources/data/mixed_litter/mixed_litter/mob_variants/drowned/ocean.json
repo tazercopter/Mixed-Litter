@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:drowned",
+  "texture": "minecraft:entity/zombie/drowned",
+  "outer_layer_texture": "minecraft:entity/zombie/drowned_outer_layer"
+}

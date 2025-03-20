@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:goat",
+  "texture": "minecraft:entity/goat/goat",
+  "biomes": "#nomansland:entity/spawns_highland_goats"
+}

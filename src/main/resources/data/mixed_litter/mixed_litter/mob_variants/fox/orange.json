@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:fox",
+  "texture": "minecraft:entity/fox/fox",
+  "sleeping_texture": "minecraft:entity/fox/fox_sleep"
+}

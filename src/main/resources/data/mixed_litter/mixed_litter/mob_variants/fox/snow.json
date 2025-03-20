@@ -1,0 +1,6 @@
+{
+  "type": "mixed_litter:fox",
+  "texture": "minecraft:entity/fox/snow_fox",
+  "sleeping_texture": "minecraft:entity/fox/snow_fox_sleep",
+  "biomes": "#minecraft:spawns_snow_foxes"
+}

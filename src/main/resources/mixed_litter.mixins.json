@@ -1,0 +1,52 @@
+{
+  "required": true,
+  "package": "dev.tazer.mixed_litter.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "mixed_litter.refmap.json",
+  "mixins": [
+    "AttachementHolderMixin",
+    "EntityMixin",
+    "LivingEntityMixin",
+    "MobMixin",
+    "MushroomCowMixin",
+    "SpawnEggItemMixin"
+  ],
+  "client": [
+    "layers.DrownedOuterLayerMixin",
+    "layers.MushroomCowMushroomLayerMixin",
+    "layers.RenderLayerMixin",
+    "layers.SaddleLayerMixin",
+    "layers.SheepFurLayerMixin",
+    "models.ChickenModelMixin",
+    "models.CowModelMixin",
+    "models.PigModelMixin",
+    "models.QuadrupedModelMixin",
+    "models.RabbitModelMixin",
+    "models.SheepModelMixin",
+    "models.SquidModelMixin",
+    "renderers.BeeRendererMixin",
+    "renderers.CamelRendererMixin",
+    "renderers.ChickenRendererMixin",
+    "renderers.CodRendererMixin",
+    "renderers.CowRendererMixin",
+    "renderers.DolphinRendererMixin",
+    "renderers.DrownedRendererMixin",
+    "renderers.FoxRendererMixin",
+    "renderers.GlowSquidRendererMixin",
+    "renderers.GoatRendererMixin",
+    "renderers.HuskRendererMixin",
+    "renderers.LLamaRendererMixin",
+    "renderers.MushroomCowRendererMixin",
+    "renderers.PigRendererMixin",
+    "renderers.RabbitRendererMixin",
+    "renderers.SalmonRendererMixin",
+    "renderers.SheepRendererMixin",
+    "renderers.SquidRendererMixin",
+    "renderers.TurtleRendererMixin",
+    "renderers.ZombieRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

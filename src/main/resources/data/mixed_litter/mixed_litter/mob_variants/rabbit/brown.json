@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:rabbit",
+  "texture": "mixed_litter:entity/rabbit_brown",
+  "baby_texture": "mixed_litter:entity/rabbit_brown"
+}

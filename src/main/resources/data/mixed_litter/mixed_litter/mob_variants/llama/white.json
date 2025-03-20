@@ -1,0 +1,5 @@
+{
+  "type": "mixed_litter:llama",
+  "texture": "minecraft:entity/llama/white",
+  "baby_texture": "minecraft:entity/llama/white"
+}
