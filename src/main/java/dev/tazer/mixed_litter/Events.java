@@ -1,7 +1,9 @@
 package dev.tazer.mixed_litter;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -18,15 +20,16 @@ public class Events {
     @SubscribeEvent
     public static void onEntitySpawned(FinalizeSpawnEvent event) {
         Mob mob = event.getEntity();
+        ServerLevelAccessor levelAccessor = event.getLevel();
 
-        applySuitableVariants(mob);
+        applySuitableVariants(mob, levelAccessor);
     }
 
     @SubscribeEvent
     public static void onEntitySpawned(EntityJoinLevelEvent event) {
-        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob) {
+        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob && event.getLevel() instanceof ServerLevel serverLevel) {
             if (!mob.hasData(MLDataAttachementTypes.MOB_VARIANTS)) {
-                applySuitableVariants(mob);
+                applySuitableVariants(mob, serverLevel);
             }
         }
     }

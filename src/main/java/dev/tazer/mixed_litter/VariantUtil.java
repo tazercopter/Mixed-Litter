@@ -9,6 +9,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
@@ -99,7 +100,7 @@ public class VariantUtil {
         setVariants(child, childVariants);
     }
 
-    public static void applySuitableVariants(Mob mob) {
+    public static void applySuitableVariants(Mob mob, ServerLevelAccessor levelAccessor) {
         Registry<MobVariant> variantTypeRegistry = mob.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
         variantTypeRegistry.holders()
@@ -110,7 +111,7 @@ public class VariantUtil {
         if (!groupedAnimals.isEmpty()) {
             List<MobVariant> selectedVariants = new ArrayList<>();
             for (List<MobVariant> variants : groupedAnimals.values())
-                selectedVariants.add(variants.getFirst().select(mob, mob.level(), variants));
+                selectedVariants.add(variants.getFirst().select(mob, levelAccessor, variants));
 
             setVariants(mob, selectedVariants);
         }
