@@ -29,7 +29,7 @@ public class ChickenRendererMixin {
             }
 
             if (variant != null) {
-                ResourceLocation texture = entity.isBaby() ? variant.texture : variant.babyTexture;
+                ResourceLocation texture = entity.isBaby() ? variant.babyTexture : variant.texture;
                 cir.setReturnValue(texture.withPath(path -> "textures/" + path + ".png"));
             }
         }

@@ -1,4 +1,4 @@
 {
   "type": "mixed_litter:glow_squid",
-  "texture": "nomansland:entity/mob_variants/glow_squid/default"
+  "texture": "mixed_litter:entity/glow_squid"
 }
