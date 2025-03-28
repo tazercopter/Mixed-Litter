@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Chicken;
+import net.minecraft.world.entity.animal.Cow;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,6 +32,6 @@ public class ChickenModelMixin<T extends Entity> {
 
     @Inject(method = "setupAnim", at = @At("TAIL"))
     private void biodiversity$setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        if (MLConfig.CHICKEN.get()) ChickenRemodel.setupAnim((Chicken) entity, biodiversity$root, limbSwing, limbSwing, ageInTicks, netHeadYaw, headPitch);
+        if (MLConfig.CHICKEN.get() && entity instanceof Chicken chicken) ChickenRemodel.setupAnim(chicken, biodiversity$root, limbSwing, limbSwing, ageInTicks, netHeadYaw, headPitch);
     }
 }

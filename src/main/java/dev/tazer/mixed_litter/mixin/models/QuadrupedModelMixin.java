@@ -19,11 +19,11 @@ public abstract class QuadrupedModelMixin<T extends Entity> {
     protected ModelPart biodiversity$root;
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void nml$init(ModelPart root, boolean scaleHead, float babyYHeadOffset, float babyZHeadOffset, float babyHeadScale, float babyBodyScale, int bodyYOffset, CallbackInfo ci) {
+    private void mixedLitter$init(ModelPart root, boolean scaleHead, float babyYHeadOffset, float babyZHeadOffset, float babyHeadScale, float babyBodyScale, int bodyYOffset, CallbackInfo ci) {
         this.biodiversity$root = root;
     }
 
     @Inject(method = "setupAnim", at = @At("TAIL"))
-    public void biodiversity$setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    public void mixedLitter$setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
     }
 }

@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(RabbitModel.class)
-public class RabbitModelMixin<T extends Entity> {
+public class RabbitModelMixin {
     @Unique
     protected ModelPart biodiversity$root;
 

@@ -3,6 +3,7 @@ package dev.tazer.mixed_litter.models;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Cow;
 
 public class CowRemodel {

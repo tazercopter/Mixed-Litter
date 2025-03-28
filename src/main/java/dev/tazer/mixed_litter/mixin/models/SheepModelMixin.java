@@ -23,7 +23,7 @@ public class SheepModelMixin<T extends Sheep> extends QuadrupedModelMixin<T> {
     }
 
     @Override
-    public void biodiversity$setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    public void mixedLitter$setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (MLConfig.SHEEP.get()) SheepRemodel.setupAnim(entity, biodiversity$root, ageInTicks, biodiversity$headXRot);
     }
 
