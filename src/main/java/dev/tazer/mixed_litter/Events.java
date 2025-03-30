@@ -40,8 +40,8 @@ public class Events {
         Mob parentB = event.getParentB();
         AgeableMob child = event.getChild();
 
-        if (child != null) {
-            setChildVariant(parentA, parentB, child);
+        if (child != null && child.level() instanceof ServerLevel serverLevel) {
+            setChildVariant(parentA, parentB, child, serverLevel);
         }
     }
 }

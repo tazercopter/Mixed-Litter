@@ -15,9 +15,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.*;
 
 public class VariantUtil {
-    public static HolderSet<MobVariant> getVariants(Mob mob) {
+    public static HolderSet<MobVariant> getVariants(Mob mob, ServerLevelAccessor levelAccessor) {
         List<Holder<MobVariant>> animalVariantHolderSet = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = mob.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         if (mob.level().isClientSide) {
             for (int i = 0; i < ((VariantDataHolder) mob).mixedLitter$getVariantData().split(", ").length; i++)
                 variantRegistry.getHolder(ResourceLocation.parse(((VariantDataHolder) mob).mixedLitter$getVariantData().split(", ")[i])).map(animalVariantHolderSet::add);
@@ -28,9 +28,9 @@ public class VariantUtil {
         return HolderSet.direct(animalVariantHolderSet);
     }
 
-    public static void setVariants(Mob mob, MobVariant... variants) {
+    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, MobVariant... variants) {
         List<String> animalVariants = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = mob.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         Arrays.stream(variants).forEach(variant ->
                 Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
 
@@ -39,9 +39,9 @@ public class VariantUtil {
         PacketDistributor.sendToPlayersTrackingEntity(mob, new VariantData(mob.getId(), variantString));
     }
 
-    public static void setVariants(Mob mob, List<MobVariant> variants) {
+    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, List<MobVariant> variants) {
         List<String> animalVariants = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = mob.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         variants.forEach(variant ->
                 Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
 
@@ -60,8 +60,8 @@ public class VariantUtil {
         PacketDistributor.sendToPlayersTrackingEntity(mob, new VariantData(mob.getId(), variantString));
     }
 
-    public static void setChildVariant(Mob parentA, Mob parentB, Mob child) {
-        Registry<MobVariant> variantTypeRegistry = child.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+    public static void setChildVariant(Mob parentA, Mob parentB, Mob child, ServerLevelAccessor levelAccessor) {
+        Registry<MobVariant> variantTypeRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
 
         Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedVariants = new HashMap<>();
         variantTypeRegistry.holders()
@@ -73,11 +73,11 @@ public class VariantUtil {
         List<MobVariant> AVariants = new ArrayList<>();
         List<MobVariant> BVariants = new ArrayList<>();
 
-        for (Holder<MobVariant> animalVariantHolder: getVariants(parentA).stream().toList()) {
+        for (Holder<MobVariant> animalVariantHolder: getVariants(parentA, levelAccessor).stream().toList()) {
             AVariants.add(animalVariantHolder.value());
         }
 
-        for (Holder<MobVariant> animalVariantHolder: getVariants(parentB).stream().toList()) {
+        for (Holder<MobVariant> animalVariantHolder: getVariants(parentB, levelAccessor).stream().toList()) {
             BVariants.add(animalVariantHolder.value());
         }
 
@@ -97,11 +97,11 @@ public class VariantUtil {
             }
         }
 
-        setVariants(child, childVariants);
+        setVariants(child, levelAccessor, childVariants);
     }
 
     public static void applySuitableVariants(Mob mob, ServerLevelAccessor levelAccessor) {
-        Registry<MobVariant> variantTypeRegistry = mob.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+        Registry<MobVariant> variantTypeRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
         variantTypeRegistry.holders()
                 .filter(animalVariantReference -> animalVariantReference.value().isFor(mob.getType()))
@@ -113,7 +113,7 @@ public class VariantUtil {
             for (List<MobVariant> variants : groupedAnimals.values())
                 selectedVariants.add(variants.getFirst().select(mob, levelAccessor, variants));
 
-            setVariants(mob, selectedVariants);
+            setVariants(mob, levelAccessor, selectedVariants);
         }
     }
 }

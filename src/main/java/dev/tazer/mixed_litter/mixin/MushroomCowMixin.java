@@ -55,7 +55,7 @@ public abstract class MushroomCowMixin extends MobMixin {
             for (List<MobVariant> variants : groupedAnimals.values())
                 selectedVariants.add(variants.get(random.nextInt(variants.size())));
 
-            setVariants((Mob) (Object) this, selectedVariants);
+            setVariants((Mob) (Object) this, level, selectedVariants);
         }
 
         ci.cancel();
@@ -63,18 +63,18 @@ public abstract class MushroomCowMixin extends MobMixin {
 
     @Inject(method = "shear", at = @At("HEAD"), cancellable = true)
     private void biodiversity$shear(SoundSource category, CallbackInfo ci) {
-        MooshroomVariant variant = null;
+        if (level() instanceof ServerLevel serverLevel) {
+            MooshroomVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) (Object) this)) {
-            if (animalVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
-                variant = mooshroomVariant;
-                break;
+            for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) (Object) this, serverLevel)) {
+                if (animalVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
+                    variant = mooshroomVariant;
+                    break;
+                }
             }
-        }
 
-        if (variant != null) {
-            level().playSound(null, (LivingEntity) (Object) this, SoundEvents.MOOSHROOM_SHEAR, category, 1.0F, 1.0F);
-            if (!level().isClientSide()) {
+            if (variant != null) {
+                level().playSound(null, (LivingEntity) (Object) this, SoundEvents.MOOSHROOM_SHEAR, category, 1.0F, 1.0F);
                 if (!EventHooks.canLivingConvert((LivingEntity) (Object) this, EntityType.COW, (timer) -> {
                 })) {
                     return;
@@ -83,7 +83,7 @@ public abstract class MushroomCowMixin extends MobMixin {
                 Cow cow = EntityType.COW.create(level());
                 if (cow != null) {
                     EventHooks.onLivingConvert((LivingEntity) (Object) this, cow);
-                    ((ServerLevel) level()).sendParticles(ParticleTypes.EXPLOSION, getX(), getY(0.5), getZ(), 2, 0.0, 0.0, 0.0, 0.1);
+                    serverLevel.sendParticles(ParticleTypes.EXPLOSION, getX(), getY(0.5), getZ(), 2, 0.0, 0.0, 0.0, 0.1);
                     discard();
                     cow.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
                     cow.setHealth(getHealth());
@@ -96,7 +96,7 @@ public abstract class MushroomCowMixin extends MobMixin {
                     }
 
                     Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
-                    getVariants(cow).forEach(animalVariantReference ->
+                    getVariants(cow, serverLevel).forEach(animalVariantReference ->
                             groupedAnimals.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value()));
 
                     Registry<MobVariant> variantRegistry = registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
@@ -108,7 +108,7 @@ public abstract class MushroomCowMixin extends MobMixin {
                         } else selectedVariants.add(variants.stream().findAny().orElseThrow());
                     }
 
-                    setVariants((Mob) (Object) this, selectedVariants);
+                    setVariants((Mob) (Object) this, serverLevel, selectedVariants);
                     level().addFreshEntity(cow);
 
                     if (variant.mushroom != Blocks.AIR) {
@@ -120,8 +120,8 @@ public abstract class MushroomCowMixin extends MobMixin {
                         }
                     }
                 }
+                ci.cancel();
             }
-            ci.cancel();
         }
     }
 }
