@@ -19,7 +19,7 @@ public class CodRendererMixin {
     private void getVariantTextureLocation(Cod entity, CallbackInfoReturnable<ResourceLocation> cir) {
         CodVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof CodVariant codVariant) {
                 variant = codVariant;
                 break;

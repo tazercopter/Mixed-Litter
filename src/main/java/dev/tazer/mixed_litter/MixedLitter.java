@@ -1,6 +1,6 @@
 package dev.tazer.mixed_litter;
 
-import dev.tazer.mixed_litter.networking.RequestVariantData;
+import dev.tazer.mixed_litter.networking.VariantRequestData;
 import dev.tazer.mixed_litter.networking.VariantData;
 import dev.tazer.mixed_litter.networking.VariantPayloadHandler;
 import dev.tazer.mixed_litter.variants.MobVariant;
@@ -9,6 +9,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
@@ -30,7 +31,7 @@ public class MixedLitter {
     }
 
     public void registerPayloadHandlers(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+        final PayloadRegistrar registrar = event.registrar("1").executesOn(HandlerThread.MAIN);
         registrar.playToClient(
                 VariantData.TYPE,
                 VariantData.STREAM_CODEC,
@@ -38,8 +39,8 @@ public class MixedLitter {
         );
 
         registrar.playToServer(
-                RequestVariantData.TYPE,
-                RequestVariantData.STREAM_CODEC,
+                VariantRequestData.TYPE,
+                VariantRequestData.STREAM_CODEC,
                 VariantPayloadHandler::handleRequestForData
         );
     }

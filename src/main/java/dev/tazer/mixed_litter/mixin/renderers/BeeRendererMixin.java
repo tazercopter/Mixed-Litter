@@ -19,7 +19,7 @@ public class BeeRendererMixin {
     private void getVariantTextureLocation(Bee entity, CallbackInfoReturnable<ResourceLocation> cir) {
         BeeVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof BeeVariant beeVariant) {
                 variant = beeVariant;
                 break;

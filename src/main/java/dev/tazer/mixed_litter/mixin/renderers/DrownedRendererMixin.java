@@ -19,7 +19,7 @@ public class DrownedRendererMixin {
     private void getVariantTextureLocation(Zombie entity, CallbackInfoReturnable<ResourceLocation> cir) {
         DrownedVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof DrownedVariant drownedVariant) {
                 variant = drownedVariant;
                 break;

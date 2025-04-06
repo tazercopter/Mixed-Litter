@@ -35,7 +35,7 @@ public abstract class DrownedOuterLayerMixin<T extends Drowned> extends RenderLa
     private void biodiversity$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         DrownedVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity, livingEntity.level())) {
             if (animalVariantHolder.value() instanceof DrownedVariant drownedVariant) {
                 variant = drownedVariant;
                 break;

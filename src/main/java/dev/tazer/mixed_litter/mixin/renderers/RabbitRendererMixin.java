@@ -21,7 +21,7 @@ public class RabbitRendererMixin {
         if (MLConfig.RABBIT.get()) {
             RabbitVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof RabbitVariant rabbitVariant) {
                     variant = rabbitVariant;
                     break;

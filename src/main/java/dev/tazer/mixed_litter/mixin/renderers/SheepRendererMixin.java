@@ -21,7 +21,7 @@ public class SheepRendererMixin {
         if (MLConfig.SHEEP.get()) {
             SheepVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof SheepVariant sheepVariant) {
                     variant = sheepVariant;
                     break;

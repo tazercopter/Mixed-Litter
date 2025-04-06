@@ -19,7 +19,7 @@ public class LLamaRendererMixin {
     private void getVariantTextureLocation(Llama entity, CallbackInfoReturnable<ResourceLocation> cir) {
         LLamaVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof LLamaVariant lLamaVariant) {
                 variant = lLamaVariant;
                 break;

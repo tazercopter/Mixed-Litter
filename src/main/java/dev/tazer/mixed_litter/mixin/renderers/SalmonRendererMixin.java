@@ -19,7 +19,7 @@ public class SalmonRendererMixin {
     private void getVariantTextureLocation(Salmon entity, CallbackInfoReturnable<ResourceLocation> cir) {
         SalmonVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof SalmonVariant salmonVariant) {
                 variant = salmonVariant;
                 break;

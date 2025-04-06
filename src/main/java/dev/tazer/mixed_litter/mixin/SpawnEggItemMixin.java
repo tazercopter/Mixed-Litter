@@ -22,7 +22,7 @@ import static dev.tazer.mixed_litter.VariantUtil.setChildVariant;
 public class SpawnEggItemMixin {
     @Inject(method = "spawnOffspringFromSpawnEgg", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;moveTo(DDDFF)V", shift = At.Shift.AFTER))
     private void setOffspringVariant(Player player, Mob p_mob, EntityType<? extends Mob> entityType, ServerLevel serverLevel, Vec3 pos, ItemStack stack, CallbackInfoReturnable<Optional<Mob>> cir, @Local(ordinal = 1) Mob mob) {
-        if (mob instanceof AgeableMob) setChildVariant(p_mob, p_mob, mob);
+        if (mob instanceof AgeableMob) setChildVariant(p_mob, p_mob, mob, serverLevel);
     }
 
 }

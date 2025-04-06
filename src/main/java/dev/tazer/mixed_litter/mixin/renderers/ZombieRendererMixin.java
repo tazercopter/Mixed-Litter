@@ -19,7 +19,7 @@ public class ZombieRendererMixin {
     private void getVariantTextureLocation(Zombie entity, CallbackInfoReturnable<ResourceLocation> cir) {
         ZombieVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof ZombieVariant zombieVariant) {
                 variant = zombieVariant;
                 break;

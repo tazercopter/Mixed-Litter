@@ -44,7 +44,7 @@ public abstract class SheepFurLayerMixin extends RenderLayerMixin<Sheep, SheepMo
         if (MLConfig.SHEEP.get()) {
             SheepVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(sheep)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(sheep, sheep.level())) {
                 if (animalVariantHolder.value() instanceof SheepVariant sheepVariant) {
                     variant = sheepVariant;
                     break;

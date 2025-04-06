@@ -19,7 +19,7 @@ public class FoxRendererMixin {
     private void getVariantTextureLocation(Fox entity, CallbackInfoReturnable<ResourceLocation> cir) {
         FoxVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof FoxVariant foxVariant) {
                 variant = foxVariant;
                 break;

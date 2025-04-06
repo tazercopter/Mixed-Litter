@@ -40,7 +40,7 @@ public abstract class MushroomCowMushroomLayerMixin<T extends MushroomCow> exten
                 if (!livingEntity.isInvisible() || flag) {
                     MooshroomVariant variant = null;
 
-                    for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity)) {
+                    for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity, livingEntity.level())) {
                         if (animalVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
                             variant = mooshroomVariant;
                             break;

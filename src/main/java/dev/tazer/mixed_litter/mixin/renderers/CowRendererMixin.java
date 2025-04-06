@@ -21,7 +21,7 @@ public class CowRendererMixin {
         if (MLConfig.COW.get()) {
             CowVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof CowVariant cowVariant) {
                     variant = cowVariant;
                     break;

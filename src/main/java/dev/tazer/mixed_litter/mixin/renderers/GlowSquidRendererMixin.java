@@ -21,7 +21,7 @@ public class GlowSquidRendererMixin {
         if (MLConfig.SQUID.get()) {
             GlowSquidVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof GlowSquidVariant glowSquidVariant) {
                     variant = glowSquidVariant;
                     break;

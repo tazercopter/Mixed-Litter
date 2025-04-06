@@ -21,7 +21,7 @@ public class PigRendererMixin {
         if (MLConfig.PIG.get()) {
             PigVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof PigVariant pigVariant) {
                     variant = pigVariant;
                     break;

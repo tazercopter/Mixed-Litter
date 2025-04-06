@@ -21,7 +21,7 @@ public class SquidRendererMixin<T extends Squid> {
         if (MLConfig.SQUID.get()) {
             SquidVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof SquidVariant squidVariant) {
                     variant = squidVariant;
                     break;

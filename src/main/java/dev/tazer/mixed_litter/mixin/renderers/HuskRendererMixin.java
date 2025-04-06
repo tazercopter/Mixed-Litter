@@ -19,7 +19,7 @@ public class HuskRendererMixin {
     private void getVariantTextureLocation(Zombie entity, CallbackInfoReturnable<ResourceLocation> cir) {
         HuskVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof HuskVariant huskVariant) {
                 variant = huskVariant;
                 break;

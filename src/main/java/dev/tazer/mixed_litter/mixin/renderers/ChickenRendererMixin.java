@@ -21,7 +21,7 @@ public class ChickenRendererMixin {
         if (MLConfig.CHICKEN.get()) {
             ChickenVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof ChickenVariant chickenVariant) {
                     variant = chickenVariant;
                     break;

@@ -1,5 +1,7 @@
 package dev.tazer.mixed_litter;
 
+import dev.tazer.mixed_litter.variants.MobVariant;
+import net.minecraft.core.Registry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Mob;
@@ -10,8 +12,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 
-import static dev.tazer.mixed_litter.VariantUtil.applySuitableVariants;
-import static dev.tazer.mixed_litter.VariantUtil.setChildVariant;
+import static dev.tazer.mixed_litter.VariantUtil.*;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = MixedLitter.MODID)
@@ -28,19 +29,18 @@ public class Events {
     @SubscribeEvent
     public static void onEntitySpawned(EntityJoinLevelEvent event) {
         if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob && event.getLevel() instanceof ServerLevel serverLevel) {
-            if (!mob.hasData(MLDataAttachementTypes.MOB_VARIANTS)) {
-                applySuitableVariants(mob, serverLevel);
-            }
+            validateVariants(mob, serverLevel);
         }
     }
 
     @SubscribeEvent
     public static void onBabyEntitySpawned(BabyEntitySpawnEvent event) {
-        Mob parentA = event.getParentA();
-        Mob parentB = event.getParentB();
         AgeableMob child = event.getChild();
 
         if (child != null && child.level() instanceof ServerLevel serverLevel) {
+            Mob parentA = event.getParentA();
+            Mob parentB = event.getParentB();
+
             setChildVariant(parentA, parentB, child, serverLevel);
         }
     }

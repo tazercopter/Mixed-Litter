@@ -19,7 +19,7 @@ public class DolphinRendererMixin {
     private void getVariantTextureLocation(Dolphin entity, CallbackInfoReturnable<ResourceLocation> cir) {
         DolphinVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof DolphinVariant dolphinVariant) {
                 variant = dolphinVariant;
                 break;

@@ -5,7 +5,9 @@ import dev.tazer.mixed_litter.variants.animals.CamelVariant;
 import net.minecraft.client.renderer.entity.CamelRenderer;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.camel.Camel;
+import net.minecraft.world.level.ServerLevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +21,7 @@ public class CamelRendererMixin {
     private void getVariantTextureLocation(Camel entity, CallbackInfoReturnable<ResourceLocation> cir) {
         CamelVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof CamelVariant camelVariant) {
                 variant = camelVariant;
                 break;

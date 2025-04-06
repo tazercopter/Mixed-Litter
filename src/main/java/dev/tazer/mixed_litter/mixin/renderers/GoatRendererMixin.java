@@ -19,7 +19,7 @@ public class GoatRendererMixin {
     private void getVariantTextureLocation(Goat entity, CallbackInfoReturnable<ResourceLocation> cir) {
         GoatVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof GoatVariant goatVariant) {
                 variant = goatVariant;
                 break;

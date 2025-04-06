@@ -20,6 +20,10 @@ import javax.annotation.Nullable;
 @Mixin(Entity.class)
 public abstract class EntityMixin extends AttachementHolderMixin {
 
+    @Shadow public abstract String getStringUUID();
+
+    @Shadow @Nullable public abstract String getEncodeId();
+
     @Shadow public abstract int getId();
 
     @Shadow @Nullable public abstract <T> T setData(AttachmentType<T> type, T data);

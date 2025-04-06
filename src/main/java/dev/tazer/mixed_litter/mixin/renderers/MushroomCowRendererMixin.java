@@ -21,7 +21,7 @@ public class MushroomCowRendererMixin {
         if (MLConfig.COW.get()) {
             MooshroomVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+            for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
                 if (animalVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
                     variant = mooshroomVariant;
                     break;

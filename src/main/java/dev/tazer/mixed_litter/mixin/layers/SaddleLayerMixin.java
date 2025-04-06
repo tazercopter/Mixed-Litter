@@ -46,7 +46,7 @@ public abstract class SaddleLayerMixin<T extends Entity & Saddleable, M extends 
             if (MLConfig.PIG.get() && livingEntity.getType() == EntityType.PIG) {
                 PigVariant variant = null;
 
-                for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) livingEntity)) {
+                for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) livingEntity, livingEntity.level())) {
                     if (animalVariantHolder.value() instanceof PigVariant pigVariant) {
                         variant = pigVariant;
                         break;

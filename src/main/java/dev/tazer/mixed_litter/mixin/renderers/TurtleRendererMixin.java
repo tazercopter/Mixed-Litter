@@ -19,7 +19,7 @@ public class TurtleRendererMixin {
     private void getVariantTextureLocation(Turtle entity, CallbackInfoReturnable<ResourceLocation> cir) {
         TurtleVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(entity)) {
+        for (Holder<MobVariant> animalVariantHolder : getVariants(entity, entity.level())) {
             if (animalVariantHolder.value() instanceof TurtleVariant turtleVariant) {
                 variant = turtleVariant;
                 break;
