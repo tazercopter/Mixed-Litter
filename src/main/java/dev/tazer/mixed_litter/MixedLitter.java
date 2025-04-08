@@ -25,7 +25,7 @@ public class MixedLitter {
         modEventBus.addListener(this::registerPayloadHandlers);
 
         MobVariantTypes.VARIANT_TYPES.register(modEventBus);
-        MLDataAttachementTypes.ATTACHMENT_TYPES.register(modEventBus);
+        MLDataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.STARTUP, MLConfig.STARTUP_CONFIG);
     }

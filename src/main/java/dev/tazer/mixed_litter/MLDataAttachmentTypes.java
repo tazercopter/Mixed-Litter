@@ -7,7 +7,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import java.util.function.Supplier;
 
-public class MLDataAttachementTypes {
+public class MLDataAttachmentTypes {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MixedLitter.MODID);
 
     public static final Supplier<AttachmentType<String>> MOB_VARIANTS = ATTACHMENT_TYPES.register(

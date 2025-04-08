@@ -25,11 +25,11 @@ public class VariantUtil {
         if (levelAccessor.isClientSide()) {
             CompoundTag tag = new CompoundTag();
             mob.save(tag);
-            if (!mob.hasData(MLDataAttachementTypes.MOB_VARIANTS)) PacketDistributor.sendToServer(new VariantRequestData(mob.getId(), tag));
+            if (!mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) PacketDistributor.sendToServer(new VariantRequestData(mob.getId(), tag));
         }
 
-        for (int i = 0; i < mob.getData(MLDataAttachementTypes.MOB_VARIANTS).split(", ").length; i++)
-            variantRegistry.getHolder(ResourceLocation.parse(mob.getData(MLDataAttachementTypes.MOB_VARIANTS).split(", ")[i])).map(animalVariantHolderSet::add);
+        for (int i = 0; i < mob.getData(MLDataAttachmentTypes.MOB_VARIANTS).split(", ").length; i++)
+            variantRegistry.getHolder(ResourceLocation.parse(mob.getData(MLDataAttachmentTypes.MOB_VARIANTS).split(", ")[i])).map(animalVariantHolderSet::add);
 
         return HolderSet.direct(animalVariantHolderSet);
     }
@@ -41,7 +41,7 @@ public class VariantUtil {
                 Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
 
         String variantString = String.join(", ", animalVariants);
-        mob.setData(MLDataAttachementTypes.MOB_VARIANTS, variantString);
+        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
         mob.save(tag);
@@ -55,7 +55,7 @@ public class VariantUtil {
                 Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
 
         String variantString = String.join(", ", animalVariants);
-        mob.setData(MLDataAttachementTypes.MOB_VARIANTS, variantString);
+        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
         mob.save(tag);
@@ -68,7 +68,7 @@ public class VariantUtil {
                 variant.unwrapKey().map(ResourceKey::location).map(ResourceLocation::toString).map(animalVariants::add));
 
         String variantString = String.join(", ", animalVariants);
-        mob.setData(MLDataAttachementTypes.MOB_VARIANTS, variantString);
+        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
         mob.save(tag);
@@ -116,6 +116,23 @@ public class VariantUtil {
     }
 
     public static void applySuitableVariants(Mob mob, ServerLevelAccessor levelAccessor) {
+        Registry<MobVariant> variantTypeRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+        Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
+        variantTypeRegistry.holders()
+                .filter(animalVariantReference -> animalVariantReference.value().isFor(mob.getType()))
+                .forEach(animalVariantReference ->
+                        groupedAnimals.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value()));
+
+        if (!groupedAnimals.isEmpty()) {
+            List<MobVariant> selectedVariants = new ArrayList<>();
+            for (List<MobVariant> variants : groupedAnimals.values())
+                selectedVariants.add(variants.getFirst().select(mob, levelAccessor, variants));
+
+            setVariants(mob, levelAccessor, selectedVariants);
+        }
+    }
+
+    public static void validateVariants(Mob mob, ServerLevelAccessor levelAccessor) {
         Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
 
         // Group variants by their codec (variant type)
@@ -154,9 +171,5 @@ public class VariantUtil {
 
         // Set the new variant list
         setVariants(mob, levelAccessor, updatedVariants);
-    }
-
-    public static void validateVariants(Mob mob, ServerLevelAccessor levelAccessor) {
-
     }
 }

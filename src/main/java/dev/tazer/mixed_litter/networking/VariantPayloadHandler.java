@@ -1,9 +1,6 @@
 package dev.tazer.mixed_litter.networking;
 
-import dev.tazer.mixed_litter.MLDataAttachementTypes;
-import dev.tazer.mixed_litter.VariantDataHolder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
+import dev.tazer.mixed_litter.MLDataAttachmentTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -22,7 +19,7 @@ public class VariantPayloadHandler {
             }
 
             if (entity instanceof Mob mob) {
-                mob.setData(MLDataAttachementTypes.MOB_VARIANTS, data.variants());
+                mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, data.variants());
             }
         });
     }
@@ -38,7 +35,7 @@ public class VariantPayloadHandler {
             }
 
             if (entity instanceof Mob mob) {
-                PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(data.id(), data.tag(), mob.getData(MLDataAttachementTypes.MOB_VARIANTS)));
+                PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(data.id(), data.tag(), mob.getData(MLDataAttachmentTypes.MOB_VARIANTS)));
             }
 
         });

@@ -2,6 +2,7 @@ package dev.tazer.mixed_litter.mixin;
 
 import com.mojang.serialization.MapCodec;
 import dev.tazer.mixed_litter.MLRegistries;
+import dev.tazer.mixed_litter.mixin.accessor.MobAccessor;
 import dev.tazer.mixed_litter.variants.MobVariant;
 import dev.tazer.mixed_litter.variants.remodels.CowVariant;
 import dev.tazer.mixed_litter.variants.remodels.MooshroomVariant;
@@ -34,7 +35,7 @@ import static dev.tazer.mixed_litter.VariantUtil.getVariants;
 import static dev.tazer.mixed_litter.VariantUtil.setVariants;
 
 @Mixin(MushroomCow.class)
-public abstract class MushroomCowMixin extends MobMixin {
+public abstract class MushroomCowMixin implements MobAccessor {
     @Shadow
     @Nullable
     private UUID lastLightningBoltUUID;
@@ -53,7 +54,7 @@ public abstract class MushroomCowMixin extends MobMixin {
 
             List<MobVariant> selectedVariants = new ArrayList<>();
             for (List<MobVariant> variants : groupedAnimals.values())
-                selectedVariants.add(variants.get(random.nextInt(variants.size())));
+                selectedVariants.add(variants.get(getRandom().nextInt(variants.size())));
 
             setVariants((Mob) (Object) this, level, selectedVariants);
         }
@@ -87,7 +88,7 @@ public abstract class MushroomCowMixin extends MobMixin {
                     discard();
                     cow.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
                     cow.setHealth(getHealth());
-                    cow.yBodyRot = yBodyRot;
+                    cow.yBodyRot = getYBodyRot();
                     cow.setInvulnerable(isInvulnerable());
                     if (isPersistenceRequired()) cow.setPersistenceRequired();
                     if (hasCustomName()) {
@@ -112,7 +113,7 @@ public abstract class MushroomCowMixin extends MobMixin {
                     level().addFreshEntity(cow);
 
                     if (variant.mushroom != Blocks.AIR) {
-                        for (int i = 0; i < random.nextInt(3, 7); ++i) {
+                        for (int i = 0; i < getRandom().nextInt(3, 7); ++i) {
                             ItemEntity item = spawnAtLocation(new ItemStack(variant.mushroom), getBbHeight());
                             if (item != null) {
                                 item.setNoPickUpDelay();

@@ -91,10 +91,10 @@ dependencies {
 //        exclude group: "maven.modrinth"
 //    }
 
-    jarJar(implementation("com.moulberry:mixinconstraints:1.0.7") {
-        exclude group: "org.slf4j",
-                module: "slf4j-api"
-    })
+//    jarJar(implementation("com.moulberry:mixinconstraints:1.0.7") {
+//        exclude group: "org.slf4j",
+//                module: "slf4j-api"
+//    })
 
     implementation "maven.modrinth:create:1.21.1-6.0.2"
     implementation "maven.modrinth:amendments:neoforge_1.21-1.2.24"

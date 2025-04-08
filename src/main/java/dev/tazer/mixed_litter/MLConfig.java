@@ -13,8 +13,6 @@ public class MLConfig {
     public static ModConfigSpec.BooleanValue SHEEP;
     public static ModConfigSpec.BooleanValue SQUID;
 
-
-
     static {
         ModConfigSpec.Builder STARTUP_BUILDER = new ModConfigSpec.Builder();
 

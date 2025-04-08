@@ -4,13 +4,12 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "mixed_litter.refmap.json",
   "mixins": [
-    "AttachementHolderMixin",
     "BucketableMixin",
-    "EntityMixin",
-    "LivingEntityMixin",
-    "MobMixin",
     "MushroomCowMixin",
-    "SpawnEggItemMixin"
+    "SpawnEggItemMixin",
+    "accessor.EntityAccessor",
+    "accessor.LivingEntityAccessor",
+    "accessor.MobAccessor"
   ],
   "client": [
     "layers.DrownedOuterLayerMixin",
