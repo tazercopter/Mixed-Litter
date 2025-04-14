@@ -9,6 +9,7 @@
     "SpawnEggItemMixin"
   ],
   "client": [
+    "RenderEntityVariantMixin",
     "layers.DrownedOuterLayerMixin",
     "layers.MushroomCowMushroomLayerMixin",
     "layers.RenderLayerMixin",
