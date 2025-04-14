@@ -13,4 +13,7 @@ public class MLDataAttachmentTypes {
     public static final Supplier<AttachmentType<String>> MOB_VARIANTS = ATTACHMENT_TYPES.register(
             "mob_variants", () -> AttachmentType.builder(() -> "").serialize(Codec.STRING).build()
     );
+    public static final Supplier<AttachmentType<String>> SUB_VARIANT = ATTACHMENT_TYPES.register(
+            "sub_variant", () -> AttachmentType.builder(() -> "").serialize(Codec.STRING).build()
+    );
 }

@@ -6,12 +6,10 @@
   "mixins": [
     "BucketableMixin",
     "MushroomCowMixin",
-    "SpawnEggItemMixin",
-    "accessor.EntityAccessor",
-    "accessor.LivingEntityAccessor",
-    "accessor.MobAccessor"
+    "SpawnEggItemMixin"
   ],
   "client": [
+    "RenderEntityVariantMixin",
     "layers.DrownedOuterLayerMixin",
     "layers.MushroomCowMushroomLayerMixin",
     "layers.RenderLayerMixin",

@@ -1,0 +1,22 @@
+{
+  "type": "mixed_litter:dynamic",
+  "entity_types": [
+    "minecraft:goat"
+  ],
+  "weight": 1,
+  "sub_variants": [
+    {
+      "nbt": {
+        "NeoForgeData": {
+          "FurData": {
+            "Sheared": 1
+          }
+        }
+      },
+      "texture": "minecraft:entity/goat/goat_shaven"
+    },
+    {
+      "texture": "minecraft:entity/goat/goat"
+    }
+  ]
+}
