@@ -32,11 +32,11 @@ public abstract class DrownedOuterLayerMixin<T extends Drowned> extends RenderLa
     private DrownedModel<T> model;
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/monster/Drowned;FFFFFF)V", at = @At("HEAD"), cancellable = true)
-    private void biodiversity$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         DrownedVariant variant = null;
 
-        for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity, livingEntity.level())) {
-            if (animalVariantHolder.value() instanceof DrownedVariant drownedVariant) {
+        for (Holder<MobVariant> mobVariantHolder : getVariants(livingEntity, livingEntity.level())) {
+            if (mobVariantHolder.value() instanceof DrownedVariant drownedVariant) {
                 variant = drownedVariant;
                 break;
             }
@@ -44,24 +44,24 @@ public abstract class DrownedOuterLayerMixin<T extends Drowned> extends RenderLa
 
         if (variant != null) {
             ResourceLocation texture = variant.outerLayerTexture;
-            biodiversity$coloredCutoutModelCopyLayerRender(this.getParentModel(), model, texture.withPath(path -> "textures/" + path + ".png"), poseStack, buffer, packedLight, livingEntity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, -1);
+            mixedLitter$coloredCutoutModelCopyLayerRender(this.getParentModel(), model, texture.withPath(path -> "textures/" + path + ".png"), poseStack, buffer, packedLight, livingEntity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, -1);
             ci.cancel();
         }
     }
 
     @Unique
-    private static <T extends LivingEntity> void biodiversity$coloredCutoutModelCopyLayerRender(EntityModel<T> modelParent, EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTick, int color) {
+    private static <T extends LivingEntity> void mixedLitter$coloredCutoutModelCopyLayerRender(EntityModel<T> modelParent, EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTick, int color) {
         if (!entity.isInvisible()) {
             modelParent.copyPropertiesTo(model);
             model.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
             model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            biodiversity$renderColoredCutoutModel(model, textureLocation, poseStack, buffer, packedLight, entity, color);
+            mixedLitter$renderColoredCutoutModel(model, textureLocation, poseStack, buffer, packedLight, entity, color);
         }
 
     }
 
     @Unique
-    private static <T extends LivingEntity> void biodiversity$renderColoredCutoutModel(EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, int color) {
+    private static <T extends LivingEntity> void mixedLitter$renderColoredCutoutModel(EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, int color) {
         VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(textureLocation));
         model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(entity, 0.0F), color);
     }

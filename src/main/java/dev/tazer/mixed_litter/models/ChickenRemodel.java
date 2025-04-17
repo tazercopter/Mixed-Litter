@@ -8,6 +8,7 @@ package dev.tazer.mixed_litter.models;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Chicken;
 
 public class ChickenRemodel {
@@ -49,7 +50,7 @@ public class ChickenRemodel {
         return LayerDefinition.create(meshdefinition, 64, 32);
     }
 
-    public static void setupAnim(Chicken chicken, ModelPart root, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+    public static void setupAnim(AgeableMob chicken, ModelPart root, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         ModelPart head = root.getChild("head");
         ModelPart body = root.getChild("body");
         ModelPart bodyAdult = body.getChild("body_adult");

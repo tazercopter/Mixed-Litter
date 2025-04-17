@@ -32,7 +32,7 @@ public abstract class MushroomCowMushroomLayerMixin<T extends MushroomCow> exten
     @Shadow protected abstract void renderMushroomBlock(PoseStack poseStack, MultiBufferSource buffer, int packedLight, boolean outlineOnly, BlockState state, int packedOverlay, BakedModel model);
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/MushroomCow;FFFFFF)V", at = @At("HEAD"), cancellable = true)
-    private void biodiversity$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (MLConfig.COW.get()) {
             if (!livingEntity.isBaby()) {
                 Minecraft minecraft = Minecraft.getInstance();
@@ -40,8 +40,8 @@ public abstract class MushroomCowMushroomLayerMixin<T extends MushroomCow> exten
                 if (!livingEntity.isInvisible() || flag) {
                     MooshroomVariant variant = null;
 
-                    for (Holder<MobVariant> animalVariantHolder : getVariants(livingEntity, livingEntity.level())) {
-                        if (animalVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
+                    for (Holder<MobVariant> mobVariantHolder : getVariants(livingEntity, livingEntity.level())) {
+                        if (mobVariantHolder.value() instanceof MooshroomVariant mooshroomVariant) {
                             variant = mooshroomVariant;
                             break;
                         }

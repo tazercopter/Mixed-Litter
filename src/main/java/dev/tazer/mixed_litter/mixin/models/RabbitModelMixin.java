@@ -17,20 +17,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RabbitModel.class)
 public class RabbitModelMixin {
     @Unique
-    protected ModelPart biodiversity$root;
+    protected ModelPart mixedLitter$root;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(ModelPart root, CallbackInfo ci) {
-        this.biodiversity$root = root;
+        this.mixedLitter$root = root;
     }
 
     @Inject(method = "createBodyLayer", at = @At("RETURN"), cancellable = true)
-    private static void biodiversity$createBodyLayer(CallbackInfoReturnable<LayerDefinition> cir) {
+    private static void mixedLitter$createBodyLayer(CallbackInfoReturnable<LayerDefinition> cir) {
         if (MLConfig.RABBIT.get()) cir.setReturnValue(RabbitRemodel.createBodyLayer());
     }
 
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/animal/Rabbit;FFFFF)V", at = @At("TAIL"))
-    private void biodiversity$setupAnim(Rabbit entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        if (MLConfig.RABBIT.get()) RabbitRemodel.setupAnim(entity, biodiversity$root, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+    private void mixedLitter$setupAnim(Rabbit entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+        if (MLConfig.RABBIT.get()) RabbitRemodel.setupAnim(entity, mixedLitter$root, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
     }
 }

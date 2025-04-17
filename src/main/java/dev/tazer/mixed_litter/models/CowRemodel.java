@@ -3,6 +3,7 @@ package dev.tazer.mixed_litter.models;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Cow;
 
@@ -69,7 +70,7 @@ public class CowRemodel {
         return LayerDefinition.create(meshdefinition, 128, 64);
     }
 
-    public static void setupAnim(Cow cow, ModelPart root) {
+    public static void setupAnim(AgeableMob cow, ModelPart root) {
         ModelPart head = root.getChild("head");
         ModelPart body = root.getChild("body");
         ModelPart bodyAdult = body.getChild("body_adult");

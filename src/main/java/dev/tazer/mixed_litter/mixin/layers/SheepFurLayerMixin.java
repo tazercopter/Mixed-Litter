@@ -32,20 +32,20 @@ import static dev.tazer.mixed_litter.VariantUtil.getVariants;
 @Mixin(SheepFurLayer.class)
 public abstract class SheepFurLayerMixin extends RenderLayerMixin<Sheep, SheepModel<Sheep>> {
     @Unique
-    private SheepModel<Sheep> biodiversity$model;
+    private SheepModel<Sheep> mixedLitter$model;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(RenderLayerParent<Sheep, SheepModel<Sheep>> renderer, EntityModelSet modelSet, CallbackInfo ci) {
-        this.biodiversity$model = new SheepModel<>(modelSet.bakeLayer(ModelLayers.SHEEP));
+        this.mixedLitter$model = new SheepModel<>(modelSet.bakeLayer(ModelLayers.SHEEP));
     }
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/Sheep;FFFFFF)V", at = @At("HEAD"), cancellable = true)
-    private void biodiversity$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (MLConfig.SHEEP.get()) {
             SheepVariant variant = null;
 
-            for (Holder<MobVariant> animalVariantHolder : getVariants(sheep, sheep.level())) {
-                if (animalVariantHolder.value() instanceof SheepVariant sheepVariant) {
+            for (Holder<MobVariant> mobVariantHolder : getVariants(sheep, sheep.level())) {
+                if (mobVariantHolder.value() instanceof SheepVariant sheepVariant) {
                     variant = sheepVariant;
                     break;
                 }
@@ -57,11 +57,11 @@ public abstract class SheepFurLayerMixin extends RenderLayerMixin<Sheep, SheepMo
                 if (sheep.isInvisible()) {
                     Minecraft minecraft = Minecraft.getInstance();
                     if (minecraft.shouldEntityAppearGlowing(sheep)) {
-                        this.getParentModel().copyPropertiesTo(this.biodiversity$model);
-                        this.biodiversity$model.prepareMobModel(sheep, limbSwing, limbSwingAmount, partialTicks);
-                        this.biodiversity$model.setupAnim(sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+                        this.getParentModel().copyPropertiesTo(this.mixedLitter$model);
+                        this.mixedLitter$model.prepareMobModel(sheep, limbSwing, limbSwingAmount, partialTicks);
+                        this.mixedLitter$model.setupAnim(sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
                         VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.outline(furTexture));
-                        this.biodiversity$model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(sheep, 0.0F), -16777216);
+                        this.mixedLitter$model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(sheep, 0.0F), -16777216);
                     }
                 } else {
                     int i;
@@ -76,7 +76,7 @@ public abstract class SheepFurLayerMixin extends RenderLayerMixin<Sheep, SheepMo
                         i = FastColor.ARGB32.lerp(f, k1, l1);
                     } else i = Sheep.getColor(sheep.getColor());
 
-                    biodiversity$coloredCutoutModelCopyLayerRender(this.getParentModel(), this.biodiversity$model, furTexture, poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, i);
+                    mixedLitter$coloredCutoutModelCopyLayerRender(this.getParentModel(), this.mixedLitter$model, furTexture, poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, i);
                 }
 
                 ci.cancel();
@@ -85,18 +85,18 @@ public abstract class SheepFurLayerMixin extends RenderLayerMixin<Sheep, SheepMo
     }
 
     @Unique
-    private static <T extends LivingEntity> void biodiversity$coloredCutoutModelCopyLayerRender(EntityModel<T> modelParent, EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTick, int color) {
+    private static <T extends LivingEntity> void mixedLitter$coloredCutoutModelCopyLayerRender(EntityModel<T> modelParent, EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float partialTick, int color) {
         if (!entity.isInvisible()) {
             modelParent.copyPropertiesTo(model);
             model.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
             model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-            biodiversity$renderColoredCutoutModel(model, textureLocation, poseStack, buffer, packedLight, entity, color);
+            mixedLitter$renderColoredCutoutModel(model, textureLocation, poseStack, buffer, packedLight, entity, color);
         }
 
     }
 
     @Unique
-    private static <T extends LivingEntity> void biodiversity$renderColoredCutoutModel(EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, int color) {
+    private static <T extends LivingEntity> void mixedLitter$renderColoredCutoutModel(EntityModel<T> model, ResourceLocation textureLocation, PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, int color) {
         VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(textureLocation));
         model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(entity, 0.0F), color);
     }

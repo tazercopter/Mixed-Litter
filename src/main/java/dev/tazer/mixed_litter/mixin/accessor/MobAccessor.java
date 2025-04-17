@@ -7,5 +7,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(Mob.class)
 public interface MobAccessor extends LivingEntityAccessor {
     @Invoker("isPersistenceRequired")
-    boolean isPersistenceRequired();
+    boolean invokeIsPersistenceRequired();
 }

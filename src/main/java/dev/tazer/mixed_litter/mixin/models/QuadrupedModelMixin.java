@@ -16,11 +16,11 @@ public abstract class QuadrupedModelMixin<T extends Entity> {
     @Shadow @Final protected ModelPart head;
 
     @Unique
-    protected ModelPart biodiversity$root;
+    protected ModelPart mixedLitter$root;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void mixedLitter$init(ModelPart root, boolean scaleHead, float babyYHeadOffset, float babyZHeadOffset, float babyHeadScale, float babyBodyScale, int bodyYOffset, CallbackInfo ci) {
-        this.biodiversity$root = root;
+        this.mixedLitter$root = root;
     }
 
     @Inject(method = "setupAnim", at = @At("TAIL"))

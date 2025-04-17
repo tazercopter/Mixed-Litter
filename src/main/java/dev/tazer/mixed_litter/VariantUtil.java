@@ -24,7 +24,7 @@ public class VariantUtil {
         Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
         if (levelAccessor.isClientSide()) {
             CompoundTag tag = new CompoundTag();
-            mob.save(tag);
+            mob.saveWithoutId(tag);
             if (!mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) PacketDistributor.sendToServer(new VariantRequestData(mob.getId(), tag));
         }
 
@@ -44,7 +44,7 @@ public class VariantUtil {
         mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
-        mob.save(tag);
+        mob.saveWithoutId(tag);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
     }
 
@@ -58,7 +58,7 @@ public class VariantUtil {
         mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
-        mob.save(tag);
+        mob.saveWithoutId(tag);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
     }
 
@@ -71,7 +71,7 @@ public class VariantUtil {
         mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
 
         CompoundTag tag = new CompoundTag();
-        mob.save(tag);
+        mob.saveWithoutId(tag);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
     }
 

@@ -45,16 +45,16 @@ public abstract class MushroomCowMixin implements MobAccessor {
         UUID uuid = lightning.getUUID();
 
         if (!uuid.equals(lastLightningBoltUUID)) {
-            Registry<MobVariant> variantTypeRegistry = registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+            Registry<MobVariant> variantTypeRegistry = invokeRegistryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
             Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
             variantTypeRegistry.holders()
-                    .filter(animalVariantReference -> animalVariantReference.value().isFor(getType()))
+                    .filter(animalVariantReference -> animalVariantReference.value().isFor(invokeGetType()))
                     .forEach(animalVariantReference ->
                             groupedAnimals.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value()));
 
             List<MobVariant> selectedVariants = new ArrayList<>();
             for (List<MobVariant> variants : groupedAnimals.values())
-                selectedVariants.add(variants.get(getRandom().nextInt(variants.size())));
+                selectedVariants.add(variants.get(invokeGetRandom().nextInt(variants.size())));
 
             setVariants((Mob) (Object) this, level, selectedVariants);
         }
@@ -64,7 +64,7 @@ public abstract class MushroomCowMixin implements MobAccessor {
 
     @Inject(method = "shear", at = @At("HEAD"), cancellable = true)
     private void biodiversity$shear(SoundSource category, CallbackInfo ci) {
-        if (level() instanceof ServerLevel serverLevel) {
+        if (invokeLevel() instanceof ServerLevel serverLevel) {
             MooshroomVariant variant = null;
 
             for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) (Object) this, serverLevel)) {
@@ -75,32 +75,32 @@ public abstract class MushroomCowMixin implements MobAccessor {
             }
 
             if (variant != null) {
-                level().playSound(null, (LivingEntity) (Object) this, SoundEvents.MOOSHROOM_SHEAR, category, 1.0F, 1.0F);
+                invokeLevel().playSound(null, (LivingEntity) (Object) this, SoundEvents.MOOSHROOM_SHEAR, category, 1.0F, 1.0F);
                 if (!EventHooks.canLivingConvert((LivingEntity) (Object) this, EntityType.COW, (timer) -> {
                 })) {
                     return;
                 }
 
-                Cow cow = EntityType.COW.create(level());
+                Cow cow = EntityType.COW.create(invokeLevel());
                 if (cow != null) {
                     EventHooks.onLivingConvert((LivingEntity) (Object) this, cow);
-                    serverLevel.sendParticles(ParticleTypes.EXPLOSION, getX(), getY(0.5), getZ(), 2, 0.0, 0.0, 0.0, 0.1);
-                    discard();
-                    cow.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
-                    cow.setHealth(getHealth());
+                    serverLevel.sendParticles(ParticleTypes.EXPLOSION, invokeGetX(), invokeGetY(0.5), invokeGetZ(), 2, 0.0, 0.0, 0.0, 0.1);
+                    invokeDiscard();
+                    cow.moveTo(invokeGetX(), invokeGetY(), invokeGetZ(), invokeGetYRot(), invokeGetXRot());
+                    cow.setHealth(invokeGetHealth());
                     cow.yBodyRot = getYBodyRot();
-                    cow.setInvulnerable(isInvulnerable());
-                    if (isPersistenceRequired()) cow.setPersistenceRequired();
-                    if (hasCustomName()) {
-                        cow.setCustomName(getCustomName());
-                        cow.setCustomNameVisible(isCustomNameVisible());
+                    cow.setInvulnerable(invokeIsInvulnerable());
+                    if (invokeIsPersistenceRequired()) cow.setPersistenceRequired();
+                    if (invokeHasCustomName()) {
+                        cow.setCustomName(invokeGetCustomName());
+                        cow.setCustomNameVisible(invokeIsCustomNameVisible());
                     }
 
                     Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
                     getVariants(cow, serverLevel).forEach(animalVariantReference ->
                             groupedAnimals.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value()));
 
-                    Registry<MobVariant> variantRegistry = registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+                    Registry<MobVariant> variantRegistry = invokeRegistryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
 
                     List<MobVariant> selectedVariants = new ArrayList<>();
                     for (List<MobVariant> variants : groupedAnimals.values()) {
@@ -110,11 +110,11 @@ public abstract class MushroomCowMixin implements MobAccessor {
                     }
 
                     setVariants((Mob) (Object) this, serverLevel, selectedVariants);
-                    level().addFreshEntity(cow);
+                    invokeLevel().addFreshEntity(cow);
 
                     if (variant.mushroom != Blocks.AIR) {
-                        for (int i = 0; i < getRandom().nextInt(3, 7); ++i) {
-                            ItemEntity item = spawnAtLocation(new ItemStack(variant.mushroom), getBbHeight());
+                        for (int i = 0; i < invokeGetRandom().nextInt(3, 7); ++i) {
+                            ItemEntity item = invokeSpawnAtLocation(new ItemStack(variant.mushroom), invokeGetBbHeight());
                             if (item != null) {
                                 item.setNoPickUpDelay();
                             }

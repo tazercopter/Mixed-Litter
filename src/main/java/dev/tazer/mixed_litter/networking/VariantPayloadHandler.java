@@ -10,34 +10,20 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public class VariantPayloadHandler {
     public static void handleData(final VariantData data, final IPayloadContext context) {
         context.enqueueWork(() -> {
-            Entity entity = null;
+            Entity entity = context.player().level().getEntity(data.id());
+            if (entity == null) entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
 
-            entity = context.player().level().getEntity(data.id());
-
-            if (entity == null) {
-                entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
-            }
-
-            if (entity instanceof Mob mob) {
-                mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, data.variants());
-            }
+            if (entity instanceof Mob mob) mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, data.variants());
         });
     }
 
     public static void handleRequestForData(final VariantRequestData data, final IPayloadContext context) {
         context.enqueueWork(() -> {
-            Entity entity = null;
+            Entity entity = context.player().level().getEntity(data.id());
+            if (entity == null) entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
 
-            entity = context.player().level().getEntity(data.id());
-
-            if (entity == null) {
-                 entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
-            }
-
-            if (entity instanceof Mob mob) {
+            if (entity instanceof Mob mob)
                 PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(data.id(), data.tag(), mob.getData(MLDataAttachmentTypes.MOB_VARIANTS)));
-            }
-
         });
     }
 }

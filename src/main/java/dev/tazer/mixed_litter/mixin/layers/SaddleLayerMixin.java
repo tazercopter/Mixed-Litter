@@ -32,7 +32,7 @@ public abstract class SaddleLayerMixin<T extends Entity & Saddleable, M extends 
     @Shadow @Final private ResourceLocation textureLocation;
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    public void biodiversity$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+    public void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         if (livingEntity.isSaddled()) {
             getParentModel().copyPropertiesTo(model);
             model.prepareMobModel(livingEntity, limbSwing, limbSwingAmount, partialTicks);
@@ -43,18 +43,18 @@ public abstract class SaddleLayerMixin<T extends Entity & Saddleable, M extends 
             VertexConsumer vertexconsumer;
             ResourceLocation saddleTexture = textureLocation;
 
-            if (MLConfig.PIG.get() && livingEntity.getType() == EntityType.PIG) {
+            if (MLConfig.PIG.get() && livingEntity.getType() == EntityType.PIG && livingEntity instanceof Mob mob) {
                 PigVariant variant = null;
 
-                for (Holder<MobVariant> animalVariantHolder : getVariants((Mob) livingEntity, livingEntity.level())) {
-                    if (animalVariantHolder.value() instanceof PigVariant pigVariant) {
+                for (Holder<MobVariant> mobVariantHolder : getVariants(mob, livingEntity.level())) {
+                    if (mobVariantHolder.value() instanceof PigVariant pigVariant) {
                         variant = pigVariant;
                         break;
                     }
                 }
 
                 if (variant != null) {
-                    saddleTexture = variant.saddleTexture;
+                    saddleTexture = variant.saddleTexture.withPath(path -> "textures/" + path + ".png");
                 }
             }
 

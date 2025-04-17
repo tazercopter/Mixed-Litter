@@ -15,53 +15,53 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface EntityAccessor {
 
     @Invoker("spawnAtLocation")
-    ItemEntity spawnAtLocation(ItemStack stack, float offsetY);
+    ItemEntity invokeSpawnAtLocation(ItemStack stack, float offsetY);
 
     @Invoker("getBbHeight")
-    float getBbHeight();
+    float invokeGetBbHeight();
 
     @Invoker("isInvulnerable")
-    boolean isInvulnerable();
+    boolean invokeIsInvulnerable();
 
     @Invoker("isCustomNameVisible")
-    boolean isCustomNameVisible();
+    boolean invokeIsCustomNameVisible();
 
     @Invoker("hasCustomName")
-    boolean hasCustomName();
+    boolean invokeHasCustomName();
 
     @Invoker("getY")
-    double getY(double scale);
+    double invokeGetY(double scale);
 
     @Invoker("discard")
-    void discard();
+    void invokeDiscard();
 
     @Invoker("getXRot")
-    float getXRot();
+    float invokeGetXRot();
 
     @Invoker("getYRot")
-    float getYRot();
+    float invokeGetYRot();
 
     @Invoker("getZ")
-    double getZ();
+    double invokeGetZ();
 
     @Invoker("getY")
-    double getY();
+    double invokeGetY();
 
     @Invoker("getX")
-    double getX();
+    double invokeGetX();
 
     @Invoker("level")
-    Level level();
+    Level invokeLevel();
 
     @Invoker("registryAccess")
-    RegistryAccess registryAccess();
+    RegistryAccess invokeRegistryAccess();
 
     @Invoker("getType")
-    EntityType<?> getType();
+    EntityType<?> invokeGetType();
 
     @Invoker("getRandom")
-    RandomSource getRandom();
+    RandomSource invokeGetRandom();
 
     @Invoker("getCustomName")
-    Component getCustomName();
+    Component invokeGetCustomName();
 }

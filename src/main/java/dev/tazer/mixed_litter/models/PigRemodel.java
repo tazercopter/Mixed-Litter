@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Pig;
 
 public class PigRemodel {
@@ -34,7 +35,7 @@ public class PigRemodel {
 
         partdefinition.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(36, 8).mirror().addBox(-1.5F, -2, -1.5F, 3, 5, 3).mirror(false), PartPose.offset(3.4F, 21, -4.5F));
 
-        partdefinition.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(0, 0).mirror().addBox(-1.5F, 0, -1.5F, 3, 3, 3).mirror(false), PartPose.offset(-3.4F, 21, 6.5F));
+        partdefinition.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(0, 0).addBox(-1.5F, 0, -1.5F, 3, 3, 3).mirror(false), PartPose.offset(-3.4F, 21, 6.5F));
 
         partdefinition.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(0, 0).mirror().addBox(-1.5F, 0, -1.5F, 3, 3, 3).mirror(false), PartPose.offset(3.4F, 21, 6.5F));
 
@@ -60,7 +61,7 @@ public class PigRemodel {
         return LayerDefinition.create(meshdefinition, 64, 64);
     }
 
-    public static void setupAnim(Pig pig, ModelPart root, float limbSwing, float limbSwingAmount, float netHeadYaw, float headPitch) {
+    public static void setupAnim(AgeableMob pig, ModelPart root, float limbSwing, float limbSwingAmount, float netHeadYaw, float headPitch) {
         ModelPart head = root.getChild("head");
         ModelPart body = root.getChild("body");
         ModelPart rightHindLeg = root.getChild("right_hind_leg");
