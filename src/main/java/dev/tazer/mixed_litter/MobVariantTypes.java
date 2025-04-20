@@ -12,6 +12,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class MobVariantTypes {
     public static final DeferredRegister<MapCodec<? extends MobVariant>> VARIANT_TYPES = DeferredRegister.create(MLRegistries.ANIMAL_VARIANT_TYPE, MixedLitter.MODID);
 
