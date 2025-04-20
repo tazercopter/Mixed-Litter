@@ -5,13 +5,18 @@
   "refmap": "mixed_litter.refmap.json",
   "mixins": [
     "BucketableMixin",
+    "CowMixin",
+    "EntityMixin",
     "MushroomCowMixin",
+    "PigMixin",
+    "SheepMixin",
     "SpawnEggItemMixin",
     "accessor.EntityAccessor",
     "accessor.LivingEntityAccessor",
     "accessor.MobAccessor"
   ],
   "client": [
+    "accessor.EntityModelAccessor",
     "layers.DrownedOuterLayerMixin",
     "layers.MushroomCowMushroomLayerMixin",
     "layers.RenderLayerMixin",
