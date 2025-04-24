@@ -9,7 +9,6 @@ import dev.tazer.mixed_litter.models.RabbitRemodel;
 import net.minecraft.client.model.RabbitModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Rabbit;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

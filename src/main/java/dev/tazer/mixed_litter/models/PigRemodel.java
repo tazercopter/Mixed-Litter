@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.animal.Pig;
 
 public class PigRemodel {
     public static LayerDefinition createBodyLayer() {

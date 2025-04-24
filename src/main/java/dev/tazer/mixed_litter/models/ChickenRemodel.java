@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.animal.Chicken;
 
 public class ChickenRemodel {
     public static LayerDefinition createBodyLayer() {

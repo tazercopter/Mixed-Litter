@@ -1,8 +1,8 @@
 package dev.tazer.mixed_litter;
 
-import dev.tazer.mixed_litter.networking.VariantRequestData;
 import dev.tazer.mixed_litter.networking.VariantData;
 import dev.tazer.mixed_litter.networking.VariantPayloadHandler;
+import dev.tazer.mixed_litter.networking.VariantRequestData;
 import dev.tazer.mixed_litter.variants.MobVariant;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
