@@ -1,6 +1,7 @@
 package dev.tazer.mixed_litter;
 
 import com.mojang.serialization.MapCodec;
+import dev.tazer.mixed_litter.variants.DynamicVariant;
 import dev.tazer.mixed_litter.variants.MobVariant;
 import dev.tazer.mixed_litter.variants.animals.*;
 import dev.tazer.mixed_litter.variants.monsters.DrownedVariant;
@@ -37,6 +38,8 @@ public class MobVariantTypes {
     public static final Supplier<MapCodec<SalmonVariant>> SALMON_VARIANT = register("salmon", SalmonVariant.CODEC);
     public static final Supplier<MapCodec<TurtleVariant>> TURTLE_VARIANT = register("turtle", TurtleVariant.CODEC);
     public static final Supplier<MapCodec<ZombieVariant>> ZOMBIE_VARIANT = register("zombie", ZombieVariant.CODEC);
+
+    public static final Supplier<MapCodec<DynamicVariant>> DYNAMIC_VARIANT = register("dynamic", DynamicVariant.CODEC);
 
     private static <P extends MobVariant> DeferredHolder<MapCodec<? extends MobVariant>, MapCodec<P>> register(String name, MapCodec<P> codec) {
         return VARIANT_TYPES.register(name, () -> codec);
