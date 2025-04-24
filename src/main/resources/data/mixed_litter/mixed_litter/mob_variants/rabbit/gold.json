@@ -1,0 +1,6 @@
+{
+  "type": "mixed_litter:rabbit",
+  "texture": "mixed_litter:entity/rabbit/rabbit_gold",
+  "baby_texture": "mixed_litter:entity/rabbit/rabbit_gold",
+  "biomes": "#c:is_desert"
+}
