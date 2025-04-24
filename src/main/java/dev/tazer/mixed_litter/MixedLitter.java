@@ -13,10 +13,13 @@ import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(MixedLitter.MODID)
 public class MixedLitter {
     public static final String MODID = "mixed_litter";
+    public static final Logger LOGGER = LogManager.getLogger("Mixed Litter");
 
     public MixedLitter(IEventBus modEventBus, ModContainer modContainer) {
 

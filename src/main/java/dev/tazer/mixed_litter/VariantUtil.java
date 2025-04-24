@@ -3,12 +3,12 @@ package dev.tazer.mixed_litter;
 import com.mojang.serialization.MapCodec;
 import dev.tazer.mixed_litter.networking.VariantData;
 import dev.tazer.mixed_litter.networking.VariantRequestData;
+import dev.tazer.mixed_litter.variants.DynamicVariant;
 import dev.tazer.mixed_litter.variants.MobVariant;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.LevelAccessor;
@@ -34,45 +34,45 @@ public class VariantUtil {
         return HolderSet.direct(animalVariantHolderSet);
     }
 
-    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, MobVariant... variants) {
-        List<String> animalVariants = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-        Arrays.stream(variants).forEach(variant ->
-                Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
-
-        String variantString = String.join(", ", animalVariants);
-        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
-
+    public static VariantData getVariantData(Mob mob)
+    {
         CompoundTag tag = new CompoundTag();
         mob.saveWithoutId(tag);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
+        String variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
+        String subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
+        return new VariantData(mob.getId(), tag, variantString, subVariant);
+    }
+
+    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, MobVariant... variants) {
+        setVariants(mob, levelAccessor, Arrays.asList(variants));
     }
 
     public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, List<MobVariant> variants) {
-        List<String> animalVariants = new ArrayList<>();
+        // Gather variants
+        List<String> variantIds = new ArrayList<>();
         Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-        variants.forEach(variant ->
-                Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(animalVariants::add));
+        variants.forEach(variant -> {
+            Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(variantIds::add);
+        });
+        // Get subvariant
+        String subVariant = "";
+        for (MobVariant variant : variants)
+        {
+            if (variant instanceof DynamicVariant dynamic) {
+                subVariant = dynamic.fetchTexture(mob).map(ResourceLocation::toString).orElse("");
+                if (!subVariant.isEmpty()) {
+                    break;
+                }
+            }
+        }
 
-        String variantString = String.join(", ", animalVariants);
+        String variantString = String.join(", ", variantIds);
         mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
+        mob.setData(MLDataAttachmentTypes.SUB_VARIANT, subVariant);
 
         CompoundTag tag = new CompoundTag();
         mob.saveWithoutId(tag);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
-    }
-
-    public static void setVariants(Mob mob, HolderSet<MobVariant> variants) {
-        List<String> animalVariants = new ArrayList<>();
-        variants.forEach(variant ->
-                variant.unwrapKey().map(ResourceKey::location).map(ResourceLocation::toString).map(animalVariants::add));
-
-        String variantString = String.join(", ", animalVariants);
-        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
-
-        CompoundTag tag = new CompoundTag();
-        mob.saveWithoutId(tag);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString));
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString, subVariant));
     }
 
     public static void setChildVariant(Mob parentA, Mob parentB, Mob child, ServerLevelAccessor levelAccessor) {
