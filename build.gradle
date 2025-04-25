@@ -101,6 +101,8 @@ dependencies {
     implementation "maven.modrinth:supplementaries:neoforge_1.21-3.0.43-beta"
     implementation "maven.modrinth:carry-on:2.2.2"
     implementation "maven.modrinth:moonlight:neoforge_1.21-2.17.34"
+    implementation "maven.modrinth:no-mans-land:1.2.0"
+    implementation "maven.modrinth:biolith:5P2awS2z"
 
 
     localRuntime "maven.modrinth:xaeros-world-map:1.38.9_NeoForge_1.21"

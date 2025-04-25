@@ -31,22 +31,22 @@ public class DynamicVariant extends MobVariant {
     ).apply(instance, (texture, nbt) -> new DynamicVariant(List.of(), 0, texture, nbt, List.of())));
 
     public static final MapCodec<DynamicVariant> CODEC = RecordCodecBuilder.mapCodec((instance) -> instance.group(
-            tagOrBuiltinCodec(Registries.ENTITY_TYPE, BuiltInRegistries.ENTITY_TYPE).listOf().fieldOf("entity_types").forGetter(DynamicVariant::entity),
+            BuiltInRegistries.ENTITY_TYPE.byNameCodec().listOf().fieldOf("entity_types").forGetter(DynamicVariant::entityTypes),
             Codec.INT.optionalFieldOf("weight", 1).forGetter(DynamicVariant::weight),
             INNER_CODEC.codec().listOf().optionalFieldOf("sub_variants", List.of()).forGetter((DynamicVariant::subVariants))
     ).apply(instance, (entityTypes, weight, subVariants) -> new DynamicVariant(entityTypes, weight, null, NbtRequirement.NONE, subVariants)));
 
     private final int weight;
-    private final List<Either<TagKey<EntityType<?>>, EntityType<?>>> entity;
     private final ResourceLocation texture;
     private final NbtRequirement nbt;
     private final List<DynamicVariant> subVariants;
+    private final List<EntityType<?>> entityTypes;
 
-    public DynamicVariant(List<Either<TagKey<EntityType<?>>, EntityType<?>>> entity, int weight,
+    public DynamicVariant(List<EntityType<?>> entityTypes, int weight,
                           ResourceLocation texture, NbtRequirement nbt,
                           List<DynamicVariant> subVariants) {
-        super(BuiltInRegistries.ENTITY_TYPE.stream().toList());
-        this.entity = entity;
+        super(entityTypes);
+        this.entityTypes = entityTypes;
         this.weight = weight;
         this.texture = texture;
         this.nbt = nbt;
@@ -56,11 +56,11 @@ public class DynamicVariant extends MobVariant {
     public DynamicVariant(EntityType<?> entityType, int weight,
                           ResourceLocation texture, NbtRequirement nbt,
                           List<DynamicVariant> subVariants) {
-        this(List.of(Either.right(entityType)), weight, texture, nbt, subVariants);
+        this(List.of(entityType), weight, texture, nbt, subVariants);
     }
 
-    public List<Either<TagKey<EntityType<?>>, EntityType<?>>> entity() {
-        return this.entity;
+    public List<EntityType<?>> entityTypes() {
+        return this.entityTypes;
     }
     public int weight() {
         return this.weight;
@@ -88,7 +88,7 @@ public class DynamicVariant extends MobVariant {
         // Filter variants based on the entity type
         SimpleWeightedRandomList.Builder<DynamicVariant> variantBuilder = SimpleWeightedRandomList.builder();
         for (DynamicVariant variant : variants) {
-            if (variant.entity.stream().anyMatch(either -> either.map(entityType::is, entityType::equals))) {
+            if (variant.entityTypes.stream().anyMatch(e -> e.equals(entityType))) {
                 variantBuilder.add(variant, variant.weight());
             }
         }

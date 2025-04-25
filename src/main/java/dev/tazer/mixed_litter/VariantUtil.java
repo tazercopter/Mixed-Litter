@@ -34,8 +34,7 @@ public class VariantUtil {
         return HolderSet.direct(animalVariantHolderSet);
     }
 
-    public static VariantData getVariantData(Mob mob)
-    {
+    public static VariantData getVariantData(Mob mob) {
         CompoundTag tag = new CompoundTag();
         mob.saveWithoutId(tag);
         String variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
@@ -54,6 +53,7 @@ public class VariantUtil {
         variants.forEach(variant -> {
             Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(variantIds::add);
         });
+
         // Get subvariant
         String subVariant = "";
         for (MobVariant variant : variants)
@@ -146,7 +146,7 @@ public class VariantUtil {
         // Get the mob's currently applied variants
         List<MobVariant> currentVariants = new ArrayList<>();
 
-        for (Holder<MobVariant> animalVariantHolder: getVariants(mob, levelAccessor).stream().toList()) {
+        for (Holder<MobVariant> animalVariantHolder: getVariants(mob, levelAccessor)) {
             currentVariants.add(animalVariantHolder.value());
         }
 
@@ -162,7 +162,7 @@ public class VariantUtil {
         // Apply missing variants (for codecs that the mob has none of)
         for (Map.Entry<MapCodec<? extends MobVariant>, List<MobVariant>> entry : groupedVariants.entrySet()) {
             MapCodec<? extends MobVariant> codec = entry.getKey();
-            boolean alreadyPresent = updatedVariants.stream().anyMatch(v -> v.codec().equals(codec));
+            boolean alreadyPresent = updatedVariants.stream().anyMatch(variant -> variant.codec().equals(codec));
             if (!alreadyPresent) {
                 MobVariant newVariant = entry.getValue().getFirst().select(mob, levelAccessor, entry.getValue());
                 updatedVariants.add(newVariant);

@@ -38,10 +38,9 @@ public class Events {
     }
 
     @SubscribeEvent
-    public static void onEntitySpawned(EntityJoinLevelEvent event) {
-        if (!event.getLevel().isClientSide && event.getEntity() instanceof Mob mob && event.getLevel() instanceof ServerLevel serverLevel) {
+    public static void onEntityLoaded(EntityJoinLevelEvent event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel && event.getEntity() instanceof Mob mob)
             validateVariants(mob, serverLevel);
-        }
     }
 
     @SubscribeEvent
@@ -64,16 +63,14 @@ public class Events {
             List<MobVariant> variants = VariantUtil.getVariants(mob, entity.level()).stream().map(Holder::value).toList();
             String subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
             String newSubVariant = "";
-            for (MobVariant variant : variants)
-            {
-                if (variant instanceof DynamicVariant dynamic)
-                {
+            for (MobVariant variant : variants) {
+                if (variant instanceof DynamicVariant dynamic) {
                     newSubVariant = dynamic.fetchTexture(mob).map(ResourceLocation::toString).orElse("");
                     if (!newSubVariant.isEmpty()) break;
                 }
             }
-            if (!newSubVariant.equals(subVariant))
-            {
+
+            if (!newSubVariant.equals(subVariant)) {
                 // Sync variant data
                 CompoundTag tag = new CompoundTag();
                 entity.save(tag);
@@ -84,11 +81,10 @@ public class Events {
     }
 
     @SubscribeEvent
-    public static void sendVariantsToTrackers(PlayerEvent.StartTracking event)
-    {
+    public static void sendVariantsToTrackers(PlayerEvent.StartTracking event) {
         if (event.getEntity() instanceof ServerPlayer player
-        && event.getTarget() instanceof Mob mob)
-        {   PacketDistributor.sendToPlayer(player, VariantUtil.getVariantData(mob));
+        && event.getTarget() instanceof Mob mob) {
+            PacketDistributor.sendToPlayer(player, VariantUtil.getVariantData(mob));
         }
     }
 }

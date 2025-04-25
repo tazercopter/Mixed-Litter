@@ -13,9 +13,8 @@ public class VariantPayloadHandler {
         context.enqueueWork(() -> {
             Entity entity = context.player().level().getEntity(data.id());
 
-            if (entity == null) {
+            if (entity == null)
                 entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
-            }
 
             if (entity instanceof Mob mob) {
                 mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, data.variants());
@@ -28,9 +27,9 @@ public class VariantPayloadHandler {
         context.enqueueWork(() -> {
             Entity entity = context.player().level().getEntity(data.id());
 
-            if (entity == null) {
-                 entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
-            }
+            if (entity == null)
+                entity = EntityType.loadEntityRecursive(data.tag(), context.player().level(), e -> e);
+
 
             if (entity instanceof Mob mob) {
                 PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, VariantUtil.getVariantData(mob));
