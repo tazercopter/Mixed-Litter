@@ -28,12 +28,12 @@ public class RenderEntityVariantMixin<T extends LivingEntity> {
     }
 
     @ModifyVariable(method = "getRenderType", at = @At(value = "STORE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getTextureLocation(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/resources/ResourceLocation;"))
-    public ResourceLocation getVariantTexture(ResourceLocation value)
-    {
+    public ResourceLocation getVariantTexture(ResourceLocation value) {
         if (STORED_ENTITY != null) {
             Mob entity = STORED_ENTITY;
             // Check subvariant
-            String subVariant = entity.getData(MLDataAttachmentTypes.SUB_VARIANT);
+//            String subVariant = entity.getData(MLDataAttachmentTypes.SUB_VARIANT);
+            String subVariant = "";
             if (subVariant.contains(":")) {
                 // Override with subvariant texture
                 ResourceLocation location = ResourceLocation.tryParse(subVariant);

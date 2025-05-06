@@ -55,30 +55,30 @@ public class Events {
         }
     }
 
-    @SubscribeEvent
-    public static void updateSubVariant(EntityTickEvent.Pre event) {
-        Entity entity = event.getEntity();
-
-        if (entity instanceof Mob mob && entity.tickCount % 5 == 0 && !entity.level().isClientSide) {
-            List<MobVariant> variants = VariantUtil.getVariants(mob, entity.level()).stream().map(Holder::value).toList();
-            String subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
-            String newSubVariant = "";
-            for (MobVariant variant : variants) {
-                if (variant instanceof DynamicVariant dynamic) {
-                    newSubVariant = dynamic.fetchTexture(mob).map(ResourceLocation::toString).orElse("");
-                    if (!newSubVariant.isEmpty()) break;
-                }
-            }
-
-            if (!newSubVariant.equals(subVariant)) {
-                // Sync variant data
-                CompoundTag tag = new CompoundTag();
-                entity.save(tag);
-                String variantsString = entity.getData(MLDataAttachmentTypes.MOB_VARIANTS);
-                PacketDistributor.sendToPlayersTrackingEntity(entity, new VariantData(entity.getId(), tag, variantsString, newSubVariant));
-            }
-        }
-    }
+//    @SubscribeEvent
+//    public static void updateSubVariant(EntityTickEvent.Pre event) {
+//        Entity entity = event.getEntity();
+//
+//        if (entity instanceof Mob mob && entity.tickCount % 5 == 0 && !entity.level().isClientSide) {
+//            List<MobVariant> variants = VariantUtil.getVariants(mob, entity.level()).stream().map(Holder::value).toList();
+//            String subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
+//            String newSubVariant = "";
+//            for (MobVariant variant : variants) {
+//                if (variant instanceof DynamicVariant dynamic) {
+//                    newSubVariant = dynamic.fetchTexture(mob).map(ResourceLocation::toString).orElse("");
+//                    if (!newSubVariant.isEmpty()) break;
+//                }
+//            }
+//
+//            if (!newSubVariant.equals(subVariant)) {
+//                // Sync variant data
+//                CompoundTag tag = new CompoundTag();
+//                entity.save(tag);
+//                String variantsString = entity.getData(MLDataAttachmentTypes.MOB_VARIANTS);
+//                PacketDistributor.sendToPlayersTrackingEntity(entity, new VariantData(entity.getId(), tag, variantsString, newSubVariant));
+//            }
+//        }
+//    }
 
     @SubscribeEvent
     public static void sendVariantsToTrackers(PlayerEvent.StartTracking event) {

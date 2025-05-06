@@ -39,7 +39,7 @@ public class MobVariantTypes {
     public static final Supplier<MapCodec<TurtleVariant>> TURTLE_VARIANT = register("turtle", TurtleVariant.CODEC);
     public static final Supplier<MapCodec<ZombieVariant>> ZOMBIE_VARIANT = register("zombie", ZombieVariant.CODEC);
 
-    public static final Supplier<MapCodec<DynamicVariant>> DYNAMIC_VARIANT = register("dynamic", DynamicVariant.CODEC);
+//    public static final Supplier<MapCodec<DynamicVariant>> DYNAMIC_VARIANT = register("dynamic", DynamicVariant.CODEC);
 
     private static <P extends MobVariant> DeferredHolder<MapCodec<? extends MobVariant>, MapCodec<P>> register(String name, MapCodec<P> codec) {
         return VARIANT_TYPES.register(name, () -> codec);

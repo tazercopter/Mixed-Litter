@@ -28,8 +28,10 @@ public class VariantUtil {
             if (!mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) PacketDistributor.sendToServer(new VariantRequestData(mob.getId(), tag));
         }
 
+        String variantString = "";
+        if (mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
         for (int i = 0; i < mob.getData(MLDataAttachmentTypes.MOB_VARIANTS).split(", ").length; i++)
-            variantRegistry.getHolder(ResourceLocation.parse(mob.getData(MLDataAttachmentTypes.MOB_VARIANTS).split(", ")[i])).map(animalVariantHolderSet::add);
+            variantRegistry.getHolder(ResourceLocation.parse(variantString.split(", ")[i])).map(animalVariantHolderSet::add);
 
         return HolderSet.direct(animalVariantHolderSet);
     }
@@ -37,8 +39,10 @@ public class VariantUtil {
     public static VariantData getVariantData(Mob mob) {
         CompoundTag tag = new CompoundTag();
         mob.saveWithoutId(tag);
-        String variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
-        String subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
+        String variantString = "";
+        if (mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
+        String subVariant = "";
+//        if (mob.hasData(MLDataAttachmentTypes.SUB_VARIANT)) subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
         return new VariantData(mob.getId(), tag, variantString, subVariant);
     }
 
@@ -68,7 +72,7 @@ public class VariantUtil {
 
         String variantString = String.join(", ", variantIds);
         mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
-        mob.setData(MLDataAttachmentTypes.SUB_VARIANT, subVariant);
+//        mob.setData(MLDataAttachmentTypes.SUB_VARIANT, subVariant);
 
         CompoundTag tag = new CompoundTag();
         mob.saveWithoutId(tag);

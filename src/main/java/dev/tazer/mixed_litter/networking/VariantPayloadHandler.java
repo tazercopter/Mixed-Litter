@@ -18,7 +18,7 @@ public class VariantPayloadHandler {
 
             if (entity instanceof Mob mob) {
                 mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, data.variants());
-                mob.setData(MLDataAttachmentTypes.SUB_VARIANT, data.subvariant());
+//                mob.setData(MLDataAttachmentTypes.SUB_VARIANT, data.subvariant());
             }
         });
     }
