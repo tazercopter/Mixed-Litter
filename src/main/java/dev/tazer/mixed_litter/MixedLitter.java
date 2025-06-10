@@ -30,7 +30,7 @@ public class MixedLitter {
         MobVariantTypes.VARIANT_TYPES.register(modEventBus);
         MLDataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
 
-        modContainer.registerConfig(ModConfig.Type.STARTUP, MLConfig.STARTUP_CONFIG);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, MLConfig.CLIENT_CONFIG);
     }
 
     public void registerPayloadHandlers(final RegisterPayloadHandlersEvent event) {
