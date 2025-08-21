@@ -1,16 +1,13 @@
 package dev.tazer.mixed_litter;
 
-import dev.tazer.mixed_litter.networking.VariantData;
-import dev.tazer.mixed_litter.networking.VariantPayloadHandler;
-import dev.tazer.mixed_litter.networking.VariantRequestData;
-import dev.tazer.mixed_litter.variants.MobVariant;
+import dev.tazer.mixed_litter.variants.Variant;
+import dev.tazer.mixed_litter.variants.VariantGroup;
+import dev.tazer.mixed_litter.variants.VariantType;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.HandlerThread;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.apache.logging.log4j.LogManager;
@@ -25,34 +22,25 @@ public class MixedLitter {
 
         modEventBus.addListener(this::registerRegistries);
         modEventBus.addListener(this::registerDatapackRegistries);
-        modEventBus.addListener(this::registerPayloadHandlers);
 
-        MobVariantTypes.VARIANT_TYPES.register(modEventBus);
-        MLDataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
+        DataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
+        ActionTypes.ACTION_TYPES.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.CLIENT, MLConfig.CLIENT_CONFIG);
-    }
-
-    public void registerPayloadHandlers(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1").executesOn(HandlerThread.MAIN);
-        registrar.playToClient(
-                VariantData.TYPE,
-                VariantData.STREAM_CODEC,
-                VariantPayloadHandler::handleData
-        );
-
-        registrar.playToServer(
-                VariantRequestData.TYPE,
-                VariantRequestData.STREAM_CODEC,
-                VariantPayloadHandler::handleRequestForData
-        );
+        // todo: variant priorities somehow? like an overlay variant that does its actions last? or maybe variants with more predicates get applied last
     }
 
     private void registerRegistries(final NewRegistryEvent event) {
-        event.register(MLRegistries.ANIMAL_VARIANT_TYPE);
+        event.register(Registries.ACTION_TYPES);
     }
 
     private void registerDatapackRegistries(final DataPackRegistryEvent.NewRegistry event) {
-        event.dataPackRegistry(MLRegistries.ANIMAL_VARIANT_KEY, MobVariant.DIRECT_CODEC, MobVariant.DIRECT_CODEC);
+        event.dataPackRegistry(Registries.VARIANT_TYPE_KEY, VariantType.CODEC, VariantType.CODEC);
+        event.dataPackRegistry(Registries.VARIANT_GROUP_KEY, VariantGroup.CODEC, VariantGroup.CODEC);
+        event.dataPackRegistry(Registries.VARIANT_KEY, Variant.CODEC, Variant.CODEC);
+    }
+
+    public static ResourceLocation location(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

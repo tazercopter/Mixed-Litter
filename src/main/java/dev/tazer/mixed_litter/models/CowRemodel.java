@@ -1,11 +1,35 @@
 package dev.tazer.mixed_litter.models;
 
+import dev.tazer.mixed_litter.MixedLitter;
+import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 
-public class CowRemodel {
+public class CowRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
+
+    private final ModelPart bodyAdult;
+    private final ModelPart headBaby;
+    private final ModelPart bodyBaby;
+    private final ModelPart rightFrontLegBaby;
+    private final ModelPart leftFrontLegBaby;
+    private final ModelPart rightHindLegBaby;
+    private final ModelPart leftHindLegBaby;
+
+    public CowRemodel(ModelPart root) {
+        super(root, false, 10.0F, 4.0F, 2.0F, 2.0F, 24);
+        bodyAdult = body.getChild("body_adult");
+        headBaby = body.getChild("head_baby");
+        bodyBaby = body.getChild("body_baby");
+        rightFrontLegBaby = bodyBaby.getChild("right_front_leg_baby");
+        leftFrontLegBaby = bodyBaby.getChild("left_front_leg_baby");
+        rightHindLegBaby = bodyBaby.getChild("right_hind_leg_baby");
+        leftHindLegBaby = bodyBaby.getChild("left_hind_leg_baby");
+    }
+
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
@@ -68,20 +92,9 @@ public class CowRemodel {
         return LayerDefinition.create(meshdefinition, 128, 64);
     }
 
-    public static void setupAnim(AgeableMob cow, ModelPart root) {
-        ModelPart head = root.getChild("head");
-        ModelPart body = root.getChild("body");
-        ModelPart bodyAdult = body.getChild("body_adult");
-        ModelPart rightHindLeg = root.getChild("right_hind_leg");
-        ModelPart leftHindLeg = root.getChild("left_hind_leg");
-        ModelPart rightFrontLeg = root.getChild("right_front_leg");
-        ModelPart leftFrontLeg = root.getChild("left_front_leg");
-        ModelPart headBaby = body.getChild("head_baby");
-        ModelPart bodyBaby = body.getChild("body_baby");
-        ModelPart rightFrontLegBaby = bodyBaby.getChild("right_front_leg_baby");
-        ModelPart leftFrontLegBaby = bodyBaby.getChild("left_front_leg_baby");
-        ModelPart rightHindLegBaby = bodyBaby.getChild("right_hind_leg_baby");
-        ModelPart leftHindLegBaby = bodyBaby.getChild("left_hind_leg_baby");
+    @Override
+    public void setupAnim(T cow, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        super.setupAnim(cow, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         boolean baby = cow.isBaby();
 
         headBaby.xScale = 2;
@@ -107,6 +120,10 @@ public class CowRemodel {
         leftHindLegBaby.xRot = leftHindLeg.xRot;
         rightFrontLegBaby.xRot = rightFrontLeg.xRot;
         leftFrontLegBaby.xRot = leftFrontLeg.xRot;
+    }
+
+    public ModelPart getHead() {
+        return head;
     }
 }
 

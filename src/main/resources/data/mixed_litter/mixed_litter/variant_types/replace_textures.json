@@ -1,0 +1,10 @@
+{
+  "actions": [
+    {
+      "type": "mixed_litter:replace_textures",
+      "arguments": {
+        "replacements": "replacements"
+      }
+    }
+  ]
+}

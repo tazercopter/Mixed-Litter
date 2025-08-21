@@ -1,6 +1,0 @@
-{
-  "type": "mixed_litter:mooshroom",
-  "texture": "mixed_litter:entity/mooshroom/brown_mooshroom",
-  "baby_texture": "mixed_litter:entity/mooshroom/brown_mooshroom_baby",
-  "mushroom": "minecraft:brown_mushroom"
-}

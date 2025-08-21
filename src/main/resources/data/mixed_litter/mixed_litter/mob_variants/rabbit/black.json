@@ -1,6 +1,0 @@
-{
-  "type": "mixed_litter:rabbit",
-  "texture": "mixed_litter:entity/rabbit/rabbit_black",
-  "baby_texture": "mixed_litter:entity/rabbit/rabbit_black",
-  "weight": 1
-}

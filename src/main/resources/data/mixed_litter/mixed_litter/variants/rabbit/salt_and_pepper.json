@@ -1,0 +1,8 @@
+{
+  "type": "mixed_litter:simple_texture",
+  "group": "mixed_litter:remodeled_rabbits",
+  "arguments": {
+    "weight": 5,
+    "texture": "mixed_litter:entity/rabbit/rabbit_salt_and_pepper"
+  }
+}

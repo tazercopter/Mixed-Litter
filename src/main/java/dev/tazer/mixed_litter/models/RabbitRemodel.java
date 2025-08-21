@@ -1,16 +1,44 @@
 package dev.tazer.mixed_litter.models;
 
-// Made with Blockbench 4.11.0
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
-
-
+import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Rabbit;
 
-public class RabbitRemodel {
+public class RabbitRemodel<T extends Rabbit> extends EntityModel<T> {
+    private final ModelPart leftRearFoot;
+    private final ModelPart rightRearFoot;
+    private final ModelPart leftHaunch;
+    private final ModelPart rightHaunch;
+    private final ModelPart body;
+    private final ModelPart leftFrontLeg;
+    private final ModelPart rightFrontLeg;
+    private final ModelPart head;
+    private final ModelPart rightEar;
+    private final ModelPart leftEar;
+    private final ModelPart tail;
+    private final ModelPart nose;
+    private float jumpRotation;
+    public RabbitRemodel(ModelPart root) {
+        leftRearFoot = root.getChild("left_hind_foot");
+        rightRearFoot = root.getChild("right_hind_foot");
+        leftHaunch = root.getChild("left_haunch");
+        rightHaunch = root.getChild("right_haunch");
+        body = root.getChild("body");
+        leftFrontLeg = root.getChild("left_front_leg");
+        rightFrontLeg = root.getChild("right_front_leg");
+        head = root.getChild("head");
+        rightEar = root.getChild("right_ear");
+        leftEar = root.getChild("left_ear");
+        tail = root.getChild("tail");
+        nose = root.getChild("nose");
+    }
+
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
@@ -45,14 +73,52 @@ public class RabbitRemodel {
         return LayerDefinition.create(meshdefinition, 32, 32);
     }
 
-    public static void setupAnim(Rabbit rabbit, ModelPart root, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        ModelPart rightHaunch = root.getChild("right_haunch");
-        ModelPart leftHaunch = root.getChild("left_haunch");
-
+    @Override
+    public void setupAnim(T rabbit, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        float f = ageInTicks - rabbit.tickCount;
+        this.nose.xRot = headPitch * 0.017453292F;
+        this.head.xRot = headPitch * 0.017453292F;
+        this.rightEar.xRot = headPitch * 0.017453292F;
+        this.leftEar.xRot = headPitch * 0.017453292F;
+        this.nose.yRot = netHeadYaw * 0.017453292F;
+        this.head.yRot = netHeadYaw * 0.017453292F;
+        this.rightEar.yRot = this.nose.yRot - 0.2617994F;
+        this.leftEar.yRot = this.nose.yRot + 0.2617994F;
+        this.jumpRotation = Mth.sin(rabbit.getJumpCompletion(f) * 3.1415927F);
+        this.leftHaunch.xRot = (this.jumpRotation * 50.0F - 21.0F) * 0.017453292F;
+        this.rightHaunch.xRot = (this.jumpRotation * 50.0F - 21.0F) * 0.017453292F;
+        this.leftRearFoot.xRot = this.jumpRotation * 50.0F * 0.017453292F;
+        this.rightRearFoot.xRot = this.jumpRotation * 50.0F * 0.017453292F;
+        this.leftFrontLeg.xRot = (this.jumpRotation * -40.0F - 11.0F) * 0.017453292F;
+        this.rightFrontLeg.xRot = (this.jumpRotation * -40.0F - 11.0F) * 0.017453292F;
         rightHaunch.xRot += 0.36651916F;
         leftHaunch.xRot += 0.36651916F;
-//
-//        rightHaunch.yRot = -0F;
-//        leftHaunch.yRot = 0F;
+    }
+
+    @Override
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
+        if (young) {
+            poseStack.pushPose();
+            poseStack.scale(0.5F, 0.5F, 0.5F);
+            poseStack.translate(0, 1.490625, 0);
+            ImmutableList.of(leftHaunch, rightHaunch, body, leftFrontLeg, rightFrontLeg, tail, head, leftEar, rightEar, nose).forEach((p_349849_) -> {
+                p_349849_.render(poseStack, buffer, packedLight, packedOverlay, color);
+            });
+            poseStack.popPose();
+        } else {
+            poseStack.pushPose();
+            poseStack.scale(0.75F, 0.75F, 0.75F);
+            poseStack.translate(0, 0.5, 0);
+            ImmutableList.of(leftRearFoot, rightRearFoot, leftHaunch, rightHaunch, body, leftFrontLeg, rightFrontLeg, head, rightEar, leftEar, tail, nose, new ModelPart[0]).forEach((p_349861_) -> {
+                p_349861_.render(poseStack, buffer, packedLight, packedOverlay, color);
+            });
+            poseStack.popPose();
+        }
+    }
+
+    @Override
+    public void prepareMobModel(T entity, float limbSwing, float limbSwingAmount, float partialTick) {
+        super.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTick);
+        this.jumpRotation = Mth.sin(entity.getJumpCompletion(partialTick) * 3.1415927F);
     }
 }

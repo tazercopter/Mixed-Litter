@@ -1,12 +1,30 @@
 package dev.tazer.mixed_litter.models;
 
+import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
-public class SquidRemodel {
+import java.util.Arrays;
+
+public class SquidRemodel<T extends LivingEntity> extends HierarchicalModel<T> {
+    private final ModelPart[] tentacles = new ModelPart[8];
+    private final ModelPart root;
+
+    public SquidRemodel(ModelPart root) {
+        this.root = root;
+        Arrays.setAll(tentacles, (p_170995_) -> root.getChild(createTentacleName(p_170995_)));
+    }
+
+    private static String createTentacleName(int index) {
+        return "tentacle" + index;
+    }
+
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
@@ -34,5 +52,21 @@ public class SquidRemodel {
         partdefinition.addOrReplaceChild("tentacle7", CubeListBuilder.create().texOffs(48, 0).addBox(-1, 0, -1, 2, 18, 2), PartPose.offsetAndRotation(3.5F, 11, -3.5F, 0, -3.927F, 0));
 
         return LayerDefinition.create(meshdefinition, 64, 64);
+    }
+
+    @Override
+    public void setupAnim(T squid, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        ModelPart[] var7 = this.tentacles;
+        int var8 = var7.length;
+
+        for(int var9 = 0; var9 < var8; ++var9) {
+            ModelPart modelpart = var7[var9];
+            modelpart.xRot = ageInTicks;
+        }
+    }
+
+    @Override
+    public ModelPart root() {
+        return root;
     }
 }

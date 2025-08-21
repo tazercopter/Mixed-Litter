@@ -1,0 +1,13 @@
+{
+  "conditions": {
+    "remodel": {
+      "type": "pig",
+      "status": true
+    },
+    "entity_predicate": {
+      "type": "pig"
+    }
+  },
+  "exclusive": true,
+  "selection": "weighted"
+}

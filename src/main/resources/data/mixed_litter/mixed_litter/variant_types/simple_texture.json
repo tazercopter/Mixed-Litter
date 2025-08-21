@@ -1,0 +1,10 @@
+{
+  "actions": [
+    {
+      "type": "mixed_litter:set_texture",
+      "arguments": {
+        "texture": "texture"
+      }
+    }
+  ]
+}

@@ -1,8 +1,0 @@
-{
-  "type": "mixed_litter:sheep",
-  "texture": "mixed_litter:entity/sheep/sheep",
-  "baby_texture": "mixed_litter:entity/sheep/sheep_baby",
-  "fur_texture": "mixed_litter:entity/sheep/sheep_fur",
-  "baby_fur_texture": "mixed_litter:entity/sheep/sheep_baby_fur",
-  "sheared_fur_texture": "mixed_litter:entity/sheep/sheep_sheared_fur"
-}

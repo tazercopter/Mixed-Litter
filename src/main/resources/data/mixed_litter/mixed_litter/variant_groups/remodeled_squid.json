@@ -1,0 +1,13 @@
+{
+  "conditions": {
+    "remodel": {
+      "type": "squid",
+      "status": true
+    },
+    "entity_predicate": {
+      "type": "squid"
+    }
+  },
+  "exclusive": true,
+  "selection": "weighted"
+}

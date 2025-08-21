@@ -1,0 +1,13 @@
+{
+  "type": "mixed_litter:simple_texture",
+  "group": "mixed_litter:remodeled_rabbits",
+  "conditions": {
+    "spawning_location": {
+      "biomes": "#c:is_snowy"
+    }
+  },
+  "arguments": {
+    "weight": 4,
+    "texture": "mixed_litter:entity/rabbit/rabbit_albino"
+  }
+}

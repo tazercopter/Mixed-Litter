@@ -1,12 +1,10 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.78'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.107'
 }
 
-tasks.named('wrapper', Wrapper).configure {
-    distributionType = Wrapper.DistributionType.BIN
-}
 
 version = mod_version
 group = mod_group_id
@@ -64,13 +62,15 @@ neoForge {
     }
 
     mods {
-        "${mod_id}" {
+        "$mod_id" {
             sourceSet(sourceSets.main)
         }
     }
 }
 
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime
@@ -78,42 +78,39 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url "https://maven.blamejared.com/" }
-    maven { url "https://repo1.maven.org/maven2" }
-    maven { url "https://api.modrinth.com/maven" }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
     maven { url "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1" }
-    maven { url 'https://maven.terraformersmc.com/' }
-    maven { url "https://cursemaven.com" }
 }
 
 dependencies {
-//    implementation("foundry.veil:veil-neoforge-$minecraft_version:$veil_version") {
-//        exclude group: "maven.modrinth"
-//    }
-
-//    jarJar(implementation("com.moulberry:mixinconstraints:1.0.7") {
-//        exclude group: "org.slf4j",
-//                module: "slf4j-api"
-//    })
-    
-    localRuntime "maven.modrinth:xaeros-world-map:1.38.9_NeoForge_1.21"
     localRuntime "me.djtheredstoner:DevAuth-neoforge:1.2.1"
 }
 
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
-            minecraft_version       : minecraft_version,
-            minecraft_version_range : minecraft_version_range,
-            neo_version             : neo_version,
-            neo_version_range       : neo_version_range,
-            loader_version_range    : loader_version_range,
-            mod_id                  : mod_id,
-            mod_name                : mod_name,
-            mod_license             : mod_license,
-            mod_version             : mod_version,
-            mod_authors             : mod_authors,
-            mod_description         : mod_description
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
     ]
+
     inputs.properties replaceProperties
 
     filesMatching(['META-INF/neoforge.mods.toml']) {
@@ -134,6 +131,9 @@ publishing {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
 }

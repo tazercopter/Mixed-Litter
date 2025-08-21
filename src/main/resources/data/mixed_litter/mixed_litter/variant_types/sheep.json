@@ -1,0 +1,19 @@
+{
+  "actions": [
+    {
+      "type": "mixed_litter:set_ageable_texture",
+      "arguments": {
+        "texture": "texture",
+        "baby_texture": "baby_texture"
+      }
+    },
+    {
+      "type": "mixed_litter:set_sheep_fur_layer",
+      "arguments": {
+        "texture": "fur_texture",
+        "baby_texture": "baby_fur_texture",
+        "sheared_texture": "sheared_fur_texture"
+      }
+    }
+  ]
+}

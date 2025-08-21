@@ -1,7 +1,0 @@
-{
-  "type": "mixed_litter:rabbit",
-  "texture": "mixed_litter:entity/rabbit/rabbit_albino",
-  "baby_texture": "mixed_litter:entity/rabbit/rabbit_albino",
-  "biomes": "#c:is_snowy",
-  "weight": 4
-}

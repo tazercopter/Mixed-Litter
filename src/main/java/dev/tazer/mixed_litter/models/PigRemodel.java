@@ -1,15 +1,34 @@
 package dev.tazer.mixed_litter.models;
 
+import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 
-public class PigRemodel {
+public class PigRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
+
+    private final ModelPart headBaby;
+    private final ModelPart rightFrontLegBaby;
+    private final ModelPart leftFrontLegBaby;
+    private final ModelPart rightHindLegBaby;
+    private final ModelPart leftHindLegBaby;
+    private final ModelPart rightEar;
+    private final ModelPart leftEar;
+
+    public PigRemodel(ModelPart root) {
+        super(root, false, 4.0F, 4.0F, 2.0F, 2.0F, 24);
+        headBaby = body.getChild("head_baby");
+        rightFrontLegBaby = headBaby.getChild("right_front_leg_baby");
+        leftFrontLegBaby = headBaby.getChild("left_front_leg_baby");
+        rightHindLegBaby = headBaby.getChild("right_hind_leg_baby");
+        leftHindLegBaby = headBaby.getChild("left_hind_leg_baby");
+        rightEar = head.getChild("right_ear");
+        leftEar = head.getChild("left_ear");
+    }
+
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
@@ -60,20 +79,8 @@ public class PigRemodel {
         return LayerDefinition.create(meshdefinition, 64, 64);
     }
 
-    public static void setupAnim(AgeableMob pig, ModelPart root, float limbSwing, float limbSwingAmount, float netHeadYaw, float headPitch) {
-        ModelPart head = root.getChild("head");
-        ModelPart body = root.getChild("body");
-        ModelPart rightHindLeg = root.getChild("right_hind_leg");
-        ModelPart leftHindLeg = root.getChild("left_hind_leg");
-        ModelPart rightFrontLeg = root.getChild("right_front_leg");
-        ModelPart leftFrontLeg = root.getChild("left_front_leg");
-        ModelPart headBaby = body.getChild("head_baby");
-        ModelPart rightFrontLegBaby = headBaby.getChild("right_front_leg_baby");
-        ModelPart leftFrontLegBaby = headBaby.getChild("left_front_leg_baby");
-        ModelPart rightHindLegBaby = headBaby.getChild("right_hind_leg_baby");
-        ModelPart leftHindLegBaby = headBaby.getChild("left_hind_leg_baby");
-        ModelPart rightEar = head.getChild("right_ear");
-        ModelPart leftEar = head.getChild("left_ear");
+    @Override
+    public void setupAnim(T pig, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         boolean baby = pig.isBaby();
 
         headBaby.xScale = 2;

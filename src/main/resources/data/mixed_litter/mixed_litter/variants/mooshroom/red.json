@@ -1,0 +1,9 @@
+{
+  "type": "mixed_litter:mooshroom",
+  "group": "mixed_litter:remodeled_mooshrooms",
+  "arguments": {
+    "texture": "mixed_litter:entity/mooshroom/red_mooshroom",
+    "baby_texture": "mixed_litter:entity/mooshroom/red_mooshroom_baby",
+    "mushroom": "minecraft:red_mushroom"
+  }
+}

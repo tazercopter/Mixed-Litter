@@ -1,179 +1,290 @@
 package dev.tazer.mixed_litter;
 
-import com.mojang.serialization.MapCodec;
-import dev.tazer.mixed_litter.networking.VariantData;
-import dev.tazer.mixed_litter.networking.VariantRequestData;
-import dev.tazer.mixed_litter.variants.DynamicVariant;
-import dev.tazer.mixed_litter.variants.MobVariant;
+import com.google.gson.JsonElement;
+import dev.tazer.mixed_litter.variants.Variant;
+import dev.tazer.mixed_litter.variants.VariantGroup;
+import dev.tazer.mixed_litter.variants.VariantType;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 
+import javax.annotation.Nullable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class VariantUtil {
-    public static HolderSet<MobVariant> getVariants(Mob mob, LevelAccessor levelAccessor) {
-        List<Holder<MobVariant>> animalVariantHolderSet = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-        if (levelAccessor.isClientSide()) {
-            CompoundTag tag = new CompoundTag();
-            mob.saveWithoutId(tag);
-            if (!mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) PacketDistributor.sendToServer(new VariantRequestData(mob.getId(), tag));
-        }
 
-        String variantString = "";
-        if (mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
-        for (int i = 0; i < mob.getData(MLDataAttachmentTypes.MOB_VARIANTS).split(", ").length; i++)
-            variantRegistry.getHolder(ResourceLocation.parse(variantString.split(", ")[i])).map(animalVariantHolderSet::add);
-
-        return HolderSet.direct(animalVariantHolderSet);
+    public static List<Variant> getVariants(Entity entity) {
+        return lookupVariantIds(entity.getData(DataAttachmentTypes.VARIANTS), entity.registryAccess());
     }
 
-    public static VariantData getVariantData(Mob mob) {
-        CompoundTag tag = new CompoundTag();
-        mob.saveWithoutId(tag);
-        String variantString = "";
-        if (mob.hasData(MLDataAttachmentTypes.MOB_VARIANTS)) variantString = mob.getData(MLDataAttachmentTypes.MOB_VARIANTS);
-        String subVariant = "";
-//        if (mob.hasData(MLDataAttachmentTypes.SUB_VARIANT)) subVariant = mob.getData(MLDataAttachmentTypes.SUB_VARIANT);
-        return new VariantData(mob.getId(), tag, variantString, subVariant);
+    public static List<Variant> lookupVariantIds(List<ResourceLocation> variants, RegistryAccess access) {
+        Registry<Variant> variantRegistry = access.registryOrThrow(Registries.VARIANT_KEY);
+        ArrayList<Variant> variantList = new ArrayList<>(variants.size());
+        for (ResourceLocation id : variants)
+            variantRegistry.getOptional(id).ifPresent(variantList::add);
+
+        return variantList;
     }
 
-    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, MobVariant... variants) {
-        setVariants(mob, levelAccessor, Arrays.asList(variants));
-    }
-
-    public static void setVariants(Mob mob, ServerLevelAccessor levelAccessor, List<MobVariant> variants) {
-        // Gather variants
-        List<String> variantIds = new ArrayList<>();
-        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-        variants.forEach(variant -> {
-            Optional.ofNullable(variantRegistry.getKey(variant)).map(ResourceLocation::toString).map(variantIds::add);
-        });
-
-        // Get subvariant
-        String subVariant = "";
-        for (MobVariant variant : variants)
-        {
-            if (variant instanceof DynamicVariant dynamic) {
-                subVariant = dynamic.fetchTexture(mob).map(ResourceLocation::toString).orElse("");
-                if (!subVariant.isEmpty()) {
-                    break;
-                }
+    public static Variant selectVariant(VariantGroup group, List<Variant> groupVariants, RandomSource random) {
+        boolean spawningLocation = false;
+        for (Variant variant : groupVariants) {
+            if (variant.conditions().isPresent() && variant.conditions().get().spawningLocation().isPresent()) {
+                spawningLocation = true;
+                break;
             }
         }
 
-        String variantString = String.join(", ", variantIds);
-        mob.setData(MLDataAttachmentTypes.MOB_VARIANTS, variantString);
-//        mob.setData(MLDataAttachmentTypes.SUB_VARIANT, subVariant);
+        if (spawningLocation)
+            groupVariants.removeIf(
+                variant -> variant.conditions().isEmpty() || variant.conditions().get().spawningLocation().isEmpty()
+            );
 
-        CompoundTag tag = new CompoundTag();
-        mob.saveWithoutId(tag);
-        PacketDistributor.sendToPlayersTrackingEntityAndSelf(mob, new VariantData(mob.getId(), tag, variantString, subVariant));
+        return switch (group.selection()) {
+            case UNIFORM -> groupVariants.get(random.nextInt(groupVariants.size()));
+            case WEIGHTED -> {
+                Variant chosen = null;
+                int cumulative = 0;
+
+                for (Variant variant : groupVariants) {
+                    int weight = Optional.ofNullable(variant.arguments().get("weight"))
+                            .map(JsonElement::getAsInt).orElse(1);
+
+                    if (random.nextInt(cumulative + weight) < weight)
+                        chosen = variant;
+                    cumulative += weight;
+                }
+
+                yield chosen;
+            }
+        };
     }
 
-    public static void setChildVariant(Mob parentA, Mob parentB, Mob child, ServerLevelAccessor levelAccessor) {
-        Registry<MobVariant> variantTypeRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
+    public static void applySuitableVariants(Entity entity) {
+        ServerLevel serverLevel = (ServerLevel) entity.level();
 
-        Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedVariants = new HashMap<>();
-        variantTypeRegistry.holders()
-                .filter(animalVariantReference -> animalVariantReference.value().isFor(child.getType()))
-                .forEach(animalVariantReference ->
-                        groupedVariants.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value())
-                );
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
+        ArrayList<Variant> selectedVariants = new ArrayList<>();
 
-        List<MobVariant> AVariants = new ArrayList<>();
-        List<MobVariant> BVariants = new ArrayList<>();
+        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
+            VariantGroup group = variantGroupHolder.value();
 
-        for (Holder<MobVariant> animalVariantHolder: getVariants(parentA, levelAccessor).stream().toList()) {
-            AVariants.add(animalVariantHolder.value());
+            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity))
+                continue;
+
+            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
+            for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
+                Variant variant = variantHolder.value();
+
+                variant.group().ifPresent(location -> {
+                    if (variantGroupRegistry.get(location) == group) {
+                        if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity))
+                            matchingGroupVariants.add(variant);
+                        availableVariants.remove(variantHolder);
+                    }
+                });
+            }
+
+            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
+                selectedVariants.add(selectVariant(group, matchingGroupVariants, entity.getRandom()));
+            }
         }
 
-        for (Holder<MobVariant> animalVariantHolder: getVariants(parentB, levelAccessor).stream().toList()) {
-            BVariants.add(animalVariantHolder.value());
+        for (Holder<Variant> variantHolder : availableVariants) {
+            Variant variant = variantHolder.value();
+            if (variant.group().isEmpty()) {
+                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity))
+                    selectedVariants.add(variant);
+            }
         }
 
-        List<MobVariant> childVariants = new ArrayList<>();
+        if (!selectedVariants.isEmpty()) {
+            setVariants(entity, selectedVariants);
+        }
+    }
 
-        for (List<MobVariant> possibleVariants : groupedVariants.values()) {
-            List<MobVariant> availableVariants = new ArrayList<>();
-            for (MobVariant variant : possibleVariants) {
+    public static void setVariants(Entity entity, List<Variant> variants) {
+        List<ResourceLocation> variantLocations = new ArrayList<>();
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        variants.forEach(variant -> Optional.ofNullable(variantRegistry.getKey(variant)).map(variantLocations::add));
+
+        entity.setData(DataAttachmentTypes.VARIANTS, variantLocations);
+    }
+
+    public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {
+        List<Variant> AVariants = new ArrayList<>(getVariants(parentA));
+        List<Variant> BVariants = new ArrayList<>(getVariants(parentB));
+
+        ServerLevel serverLevel = (ServerLevel) child.level();
+
+        Registry<VariantGroup> variantGroupRegistry = child.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = child.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
+        ArrayList<Variant> childVariants = new ArrayList<>();
+
+        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
+            VariantGroup group = variantGroupHolder.value();
+
+            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, child.position(), child))
+                continue;
+
+            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
+            for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
+                Variant variant = variantHolder.value();
+
                 if (AVariants.contains(variant) || BVariants.contains(variant)) {
-                    availableVariants.add(variant);
+                    variant.group().ifPresent(location -> {
+                        if (variantGroupRegistry.get(location) == group) {
+                            if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, child.position(), child))
+                                matchingGroupVariants.add(variant);
+                            availableVariants.remove(variantHolder);
+                        }
+                    });
                 }
             }
 
-            if (!availableVariants.isEmpty()) {
-                MobVariant chosenVariant = availableVariants.get(child.getRandom().nextInt(availableVariants.size()));
-                childVariants.add(chosenVariant);
+            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
+                childVariants.add(matchingGroupVariants.get(child.getRandom().nextInt(matchingGroupVariants.size())));
             }
         }
 
-        setVariants(child, levelAccessor, childVariants);
-    }
-
-    public static void applySuitableVariants(Mob mob, ServerLevelAccessor levelAccessor) {
-        Registry<MobVariant> variantTypeRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-        Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedAnimals = new HashMap<>();
-        variantTypeRegistry.holders()
-                .filter(animalVariantReference -> animalVariantReference.value().isFor(mob.getType()))
-                .forEach(animalVariantReference ->
-                        groupedAnimals.computeIfAbsent(animalVariantReference.value().codec(), mapCodec -> new ArrayList<>()).add(animalVariantReference.value()));
-
-        if (!groupedAnimals.isEmpty()) {
-            List<MobVariant> selectedVariants = new ArrayList<>();
-            for (List<MobVariant> variants : groupedAnimals.values())
-                selectedVariants.add(variants.getFirst().select(mob, levelAccessor, variants));
-
-            setVariants(mob, levelAccessor, selectedVariants);
-        }
-    }
-
-    public static void validateVariants(Mob mob, ServerLevelAccessor levelAccessor) {
-        Registry<MobVariant> variantRegistry = levelAccessor.registryAccess().registryOrThrow(MLRegistries.ANIMAL_VARIANT_KEY);
-
-        // Group variants by their codec (variant type)
-        Map<MapCodec<? extends MobVariant>, List<MobVariant>> groupedVariants = new HashMap<>();
-        variantRegistry.holders()
-                .filter(ref -> ref.value().isFor(mob.getType()))
-                .forEach(ref -> groupedVariants
-                        .computeIfAbsent(ref.value().codec(), codec -> new ArrayList<>())
-                        .add(ref.value()));
-
-        // Get the mob's currently applied variants
-        List<MobVariant> currentVariants = new ArrayList<>();
-
-        for (Holder<MobVariant> animalVariantHolder: getVariants(mob, levelAccessor)) {
-            currentVariants.add(animalVariantHolder.value());
-        }
-
-        // Keep only valid current variants (whose codec still exists and is valid for this mob)
-        List<MobVariant> updatedVariants = currentVariants.stream()
-                .filter(variant -> {
-                    MapCodec<? extends MobVariant> codec = variant.codec();
-                    List<MobVariant> validVariants = groupedVariants.get(codec);
-                    return validVariants != null && validVariants.contains(variant);
-                })
-                .collect(Collectors.toList());
-
-        // Apply missing variants (for codecs that the mob has none of)
-        for (Map.Entry<MapCodec<? extends MobVariant>, List<MobVariant>> entry : groupedVariants.entrySet()) {
-            MapCodec<? extends MobVariant> codec = entry.getKey();
-            boolean alreadyPresent = updatedVariants.stream().anyMatch(variant -> variant.codec().equals(codec));
-            if (!alreadyPresent) {
-                MobVariant newVariant = entry.getValue().getFirst().select(mob, levelAccessor, entry.getValue());
-                updatedVariants.add(newVariant);
+        for (Holder<Variant> variantHolder : availableVariants) {
+            Variant variant = variantHolder.value();
+            if ((AVariants.contains(variant) || BVariants.contains(variant)) && variant.group().isEmpty()) {
+                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, child.position(), child))
+                    childVariants.add(variantHolder.value());
             }
         }
 
-        // Set the new variant list
-        setVariants(mob, levelAccessor, updatedVariants);
+        if (!childVariants.isEmpty()) {
+            setVariants(child, childVariants);
+        }
+    }
+
+    public static void validateVariants(Entity entity) {
+        List<Variant> oldVariants = getVariants(entity);
+        ArrayList<Variant> newVariants = new ArrayList<>(oldVariants);
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+
+        ServerLevel serverLevel = (ServerLevel) entity.level();
+
+        for (Variant variant : oldVariants) {
+            if (variant.group().isPresent()) {
+                VariantGroup group = variantGroupRegistry.get(variant.group().get());
+                if (group != null) {
+                    if (group.conditions().isPresent()) {
+                        if (!group.conditions().get().matches(serverLevel, entity.position(), entity)) {
+                            newVariants.remove(variant);
+                            continue;
+                        }
+                    }
+                } else {
+                    newVariants.remove(variant);
+                    continue;
+                }
+            }
+
+            if (variant.conditions().isPresent()) {
+                if (!variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
+                    newVariants.remove(variant);
+                }
+            }
+        }
+
+        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
+        ArrayList<Variant> selectedVariants = new ArrayList<>();
+
+
+        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
+            VariantGroup group = variantGroupHolder.value();
+
+            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity))
+                continue;
+
+            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
+            for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
+                Variant variant = variantHolder.value();
+
+                variant.group().ifPresent(location -> {
+                    if (variantGroupRegistry.get(location) == group) {
+                        if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity))
+                            matchingGroupVariants.add(variant);
+                        availableVariants.remove(variantHolder);
+                    }
+                });
+            }
+
+            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
+                selectedVariants.add(selectVariant(group, matchingGroupVariants, entity.getRandom()));
+            }
+        }
+
+        for (Holder<Variant> variantHolder : availableVariants) {
+            Variant variant = variantHolder.value();
+            if (variant.group().isEmpty()) {
+                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity))
+                    selectedVariants.add(variant);
+            }
+        }
+
+        for (Variant selectedVariant : new ArrayList<>(selectedVariants)) {
+            for (Variant newVariant : newVariants) {
+
+                if (selectedVariant == newVariant) selectedVariants.remove(selectedVariant);
+
+                if (newVariant.group().isPresent() && getGroup(entity, newVariant).exclusive() && selectedVariant.group().equals(newVariant.group())) {
+                    selectedVariants.remove(selectedVariant);
+                }
+            }
+        }
+
+        Map<ResourceLocation, List<Variant>> groupedVariants = new HashMap<>();
+
+        for (Variant variant : new ArrayList<>(newVariants)) {
+            if (variant.group().isPresent()) {
+                ResourceLocation groupId = variant.group().get();
+                VariantGroup group = variantGroupRegistry.get(groupId);
+                if (group != null && group.exclusive()) {
+                    groupedVariants.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant);
+                }
+            }
+        }
+
+        for (Map.Entry<ResourceLocation, List<Variant>> entry : groupedVariants.entrySet()) {
+            List<Variant> groupVariants = entry.getValue();
+            if (groupVariants.size() > 1) {
+                VariantGroup group = variantGroupRegistry.get(entry.getKey());
+                if (group != null) {
+                    Variant chosen = selectVariant(group, groupVariants, entity.getRandom());
+                    newVariants.removeAll(groupVariants);
+                    newVariants.add(chosen);
+                }
+            }
+        }
+
+        newVariants.addAll(selectedVariants);
+
+        if (!newVariants.equals(oldVariants)) {
+            setVariants(entity, newVariants);
+        }
+    }
+
+    public static @Nullable VariantGroup getGroup(Entity entity, Variant variant) {
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
+
+        return variant.group().map(variantGroupRegistry::get).orElse(null);
+    }
+
+    public static VariantType getType(Entity entity, Variant variant) {
+        Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_TYPE_KEY);
+
+        return variantTypeRegistry.get(variant.type());
     }
 }

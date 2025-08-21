@@ -1,16 +1,44 @@
 package dev.tazer.mixed_litter.models;
 
-// Made with Blockbench 4.11.0
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
-
-
+import com.google.common.collect.ImmutableList;
+import dev.tazer.mixed_litter.MixedLitter;
+import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Chicken;
 
-public class ChickenRemodel {
+public class ChickenRemodel<T extends AgeableMob> extends AgeableListModel<T> {
+
+    private final ModelPart head;
+    private final ModelPart body;
+    private final ModelPart bodyAdult;
+    private final ModelPart rightWing;
+    private final ModelPart leftWing;
+    private final ModelPart rightLeg;
+    private final ModelPart leftLeg;
+    private final ModelPart bodyBaby;
+    private final ModelPart headBaby;
+    private final ModelPart rightLegBaby;
+    private final ModelPart leftLegBaby;
+
+    public ChickenRemodel(ModelPart root) {
+        head = root.getChild("head");
+        body = root.getChild("body");
+        bodyAdult = body.getChild("body_adult");
+        rightWing = root.getChild("right_wing");
+        leftWing = root.getChild("left_wing");
+        rightLeg = root.getChild("right_leg");
+        leftLeg = root.getChild("left_leg");
+        bodyBaby = body.getChild("body_baby");
+        headBaby = bodyBaby.getChild("head_baby");
+        rightLegBaby = bodyBaby.getChild("right_leg_baby");
+        leftLegBaby = bodyBaby.getChild("left_leg_baby");
+    }
+
     public static LayerDefinition createBodyLayer() {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
@@ -49,18 +77,7 @@ public class ChickenRemodel {
         return LayerDefinition.create(meshdefinition, 64, 32);
     }
 
-    public static void setupAnim(AgeableMob chicken, ModelPart root, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        ModelPart head = root.getChild("head");
-        ModelPart body = root.getChild("body");
-        ModelPart bodyAdult = body.getChild("body_adult");
-        ModelPart rightWing = root.getChild("right_wing");
-        ModelPart leftWing = root.getChild("left_wing");
-        ModelPart rightLeg = root.getChild("right_leg");
-        ModelPart leftLeg = root.getChild("left_leg");
-        ModelPart bodyBaby = body.getChild("body_baby");
-        ModelPart headBaby = bodyBaby.getChild("head_baby");
-        ModelPart rightLegBaby = bodyBaby.getChild("right_leg_baby");
-        ModelPart leftLegBaby = bodyBaby.getChild("left_leg_baby");
+    public void setupAnim(T chicken, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         boolean baby = chicken.isBaby();
 
         bodyBaby.xScale = 2;
@@ -89,5 +106,13 @@ public class ChickenRemodel {
 
         rightLegBaby.xRot = rightLeg.xRot;
         leftLegBaby.xRot = leftLeg.xRot;
+    }
+
+    protected Iterable<ModelPart> headParts() {
+        return ImmutableList.of(head);
+    }
+
+    protected Iterable<ModelPart> bodyParts() {
+        return ImmutableList.of(body, rightLeg, leftLeg, rightWing, leftWing);
     }
 }

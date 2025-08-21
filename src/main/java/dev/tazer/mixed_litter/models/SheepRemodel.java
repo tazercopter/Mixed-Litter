@@ -1,11 +1,45 @@
 package dev.tazer.mixed_litter.models;
 
+import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.animal.Sheep;
 
-public class SheepRemodel {
+public class SheepRemodel<T extends Sheep> extends QuadrupedModel<T> {
+    private float headXRot;
+    private final ModelPart bodyAdult;
+    private final ModelPart bodyWool;
+    private final ModelPart rightFrontLegWool;
+    private final ModelPart leftFrontLegWool;
+    private final ModelPart rightHindLegWool;
+    private final ModelPart leftHindLegWool;
+    private final ModelPart headBaby;
+    private final ModelPart bodyBaby;
+    private final ModelPart rightFrontLegBaby;
+    private final ModelPart leftFrontLegBaby;
+    private final ModelPart rightHindLegBaby;
+    private final ModelPart leftHindLegBaby;
+    private final ModelPart shearedTail;
+
+    public SheepRemodel(ModelPart root) {
+        super(root, false, 8.0F, 4.0F, 2.0F, 2.0F, 24);
+
+        bodyAdult = body.getChild("body_adult");
+        bodyWool = bodyAdult.getChild("body_wool");
+        rightHindLegWool = rightHindLeg.getChild("right_hind_leg_wool");
+        leftHindLegWool = leftHindLeg.getChild("left_hind_leg_wool");
+        rightFrontLegWool = rightFrontLeg.getChild("right_front_leg_wool");
+        leftFrontLegWool = leftFrontLeg.getChild("left_front_leg_wool");
+        headBaby = body.getChild("head_baby");
+        bodyBaby = body.getChild("body_baby");
+        rightFrontLegBaby = bodyBaby.getChild("right_front_leg_baby");
+        leftFrontLegBaby = bodyBaby.getChild("left_front_leg_baby");
+        rightHindLegBaby = bodyBaby.getChild("right_hind_leg_baby");
+        leftHindLegBaby = bodyBaby.getChild("left_hind_leg_baby");
+        shearedTail = bodyAdult.getChild("sheared_tail");
+    }
+
     public static LayerDefinition createBodyLayer() {
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
@@ -65,26 +99,17 @@ public class SheepRemodel {
 		return LayerDefinition.create(meshdefinition, 128, 64);
     }
 
-    public static void setupAnim(Sheep sheep, ModelPart root, float ageInTicks, float headXRot) {
-        ModelPart head = root.getChild("head");
-        ModelPart body = root.getChild("body");
-        ModelPart bodyAdult = body.getChild("body_adult");
-        ModelPart bodyWool = bodyAdult.getChild("body_wool");
-        ModelPart rightHindLeg = root.getChild("right_hind_leg");
-        ModelPart leftHindLeg = root.getChild("left_hind_leg");
-        ModelPart rightFrontLeg = root.getChild("right_front_leg");
-        ModelPart leftFrontLeg = root.getChild("left_front_leg");
-        ModelPart rightHindLegWool = rightHindLeg.getChild("right_hind_leg_wool");
-        ModelPart leftHindLegWool = leftHindLeg.getChild("left_hind_leg_wool");
-        ModelPart rightFrontLegWool = rightFrontLeg.getChild("right_front_leg_wool");
-        ModelPart leftFrontLegWool = leftFrontLeg.getChild("left_front_leg_wool");
-        ModelPart headBaby = body.getChild("head_baby");
-        ModelPart bodyBaby = body.getChild("body_baby");
-        ModelPart rightFrontLegBaby = bodyBaby.getChild("right_front_leg_baby");
-        ModelPart leftFrontLegBaby = bodyBaby.getChild("left_front_leg_baby");
-        ModelPart rightHindLegBaby = bodyBaby.getChild("right_hind_leg_baby");
-        ModelPart leftHindLegBaby = bodyBaby.getChild("left_hind_leg_baby");
-        ModelPart shearedTail = bodyAdult.getChild("sheared_tail");
+    public void prepareMobModel(T sheep, float limbSwing, float limbSwingAmount, float partialTick) {
+        super.prepareMobModel(sheep, limbSwing, limbSwingAmount, partialTick);
+        head.y = 11 + sheep.getHeadEatPositionScale(partialTick) * 7.0F;
+        headXRot = sheep.getHeadEatAngleScale(partialTick);
+    }
+
+    public void setupAnim(T sheep, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        super.setupAnim(sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+
+        this.head.xRot = this.headXRot;
+
         boolean baby = sheep.isBaby();
         boolean sheared = sheep.isSheared();
 

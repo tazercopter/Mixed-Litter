@@ -1,0 +1,11 @@
+{
+  "type": "mixed_litter:sheep",
+  "group": "mixed_litter:remodeled_sheep",
+  "arguments": {
+    "texture": "mixed_litter:entity/sheep/sheep",
+    "baby_texture": "mixed_litter:entity/sheep/sheep_baby",
+    "fur_texture": "mixed_litter:entity/sheep/sheep_fur",
+    "baby_fur_texture": "mixed_litter:entity/sheep/sheep_baby_fur",
+    "sheared_fur_texture": "mixed_litter:entity/sheep/sheep_sheared_fur"
+  }
+}

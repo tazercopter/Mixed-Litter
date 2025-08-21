@@ -1,0 +1,7 @@
+{
+  "type": "mixed_litter:simple_texture",
+  "group": "mixed_litter:remodeled_squid",
+  "arguments": {
+    "texture": "mixed_litter:entity/squid"
+  }
+}
