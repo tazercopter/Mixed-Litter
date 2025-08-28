@@ -9,5 +9,6 @@
     }
   },
   "exclusive": true,
-  "selection": "uniform"
+  "replace_default": true,
+  "selection": "weighted"
 }

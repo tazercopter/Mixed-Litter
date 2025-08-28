@@ -4,12 +4,11 @@ import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.tazer.mixed_litter.DataAttachmentTypes;
-import dev.tazer.mixed_litter.MLConfig;
+import dev.tazer.mixed_litter.Config;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +28,7 @@ public record EntityConditions(Optional<ConfigCondition> configCondition, Option
 
     public boolean matches(ServerLevel level, @Nullable Vec3 position, Entity entity) {
         if (configCondition.isPresent()) {
-            UnmodifiableConfig config = MLConfig.CLIENT_CONFIG.getValues().get("animal_remodels");
+            UnmodifiableConfig config = Config.CLIENT_CONFIG.getValues().get("animal_remodels");
             ModConfigSpec.BooleanValue booleanValue = config.get(configCondition.get().path() + "Remodel");
             if (booleanValue.get() != configCondition.get().status()) return false;
         }

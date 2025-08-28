@@ -2,13 +2,13 @@ package dev.tazer.mixed_litter.mixin.actions;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.tazer.mixed_litter.MLConfig;
+import dev.tazer.mixed_litter.Config;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.Action;
 import dev.tazer.mixed_litter.actions.ActionType;
 import dev.tazer.mixed_litter.actions.SetSheepFurLayer;
 import dev.tazer.mixed_litter.client.ModelLayers;
-import dev.tazer.mixed_litter.models.SheepRemodel;
+import dev.tazer.mixed_litter.client.models.SheepRemodel;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantType;
 import net.minecraft.client.Minecraft;
@@ -51,7 +51,7 @@ public abstract class SetSheepFurLayerMixin {
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/Sheep;FFFFFF)V", at = @At("HEAD"), cancellable = true)
     private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        EntityModel<Sheep> model = MLConfig.SHEEP.get() && sheep.getType() == EntityType.SHEEP ? sheepRemodel : this.model;
+        EntityModel<Sheep> model = Config.SHEEP.get() && sheep.getType() == EntityType.SHEEP ? sheepRemodel : this.model;
         ResourceLocation furTexture = null; // todo: should there be an interaction when two variants applied have the setsheepfurlayer action?
 
         for (Variant variant : VariantUtil.getVariants(sheep)) {

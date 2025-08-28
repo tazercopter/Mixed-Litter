@@ -24,6 +24,6 @@ public record VariantType(JsonObject defaults, List<Action> actions) {
                                 for (var element : obj.entrySet()) map.put(element.getKey(), element.getValue());
                                 return map;
                             }).optionalFieldOf("defaults", new JsonObject()).forGetter(VariantType::defaults),
-                    Action.CODEC.listOf().fieldOf("actions").forGetter(VariantType::actions)
+                    Action.CODEC.listOf().optionalFieldOf("actions", List.of()).forGetter(VariantType::actions)
             ).apply(instance, VariantType::new));
 }

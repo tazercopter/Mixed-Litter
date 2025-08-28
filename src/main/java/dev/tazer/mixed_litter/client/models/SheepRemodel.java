@@ -1,4 +1,4 @@
-package dev.tazer.mixed_litter.models;
+package dev.tazer.mixed_litter.client.models;
 
 import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;

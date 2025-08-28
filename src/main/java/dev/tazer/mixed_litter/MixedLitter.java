@@ -26,8 +26,9 @@ public class MixedLitter {
         DataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
         ActionTypes.ACTION_TYPES.register(modEventBus);
 
-        modContainer.registerConfig(ModConfig.Type.CLIENT, MLConfig.CLIENT_CONFIG);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);
         // todo: variant priorities somehow? like an overlay variant that does its actions last? or maybe variants with more predicates get applied last
+        // todo: add exclusivity with other groups?
     }
 
     private void registerRegistries(final NewRegistryEvent event) {

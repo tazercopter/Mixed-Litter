@@ -2,7 +2,7 @@ package dev.tazer.mixed_litter;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-public class MLConfig {
+public class Config {
 
     public static ModConfigSpec CLIENT_CONFIG;
     public static final String CATEGORY_REMODELS = "animal_remodels";

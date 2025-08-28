@@ -72,8 +72,11 @@ public class VariantUtil {
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
         ArrayList<Variant> selectedVariants = new ArrayList<>();
 
+        boolean replaceDefault = false;
+
         for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
             VariantGroup group = variantGroupHolder.value();
+            if (group.replaceDefault()) replaceDefault = true;
 
             if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity))
                 continue;
@@ -102,6 +105,22 @@ public class VariantUtil {
                 if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity))
                     selectedVariants.add(variant);
             }
+        }
+
+        if (replaceDefault) {
+            for (Variant variant : new ArrayList<>(selectedVariants)) {
+                variant.group().ifPresent(location -> {
+                    if (location.equals(MixedLitter.location("default")))
+                        selectedVariants.remove(variant);
+                });
+            }
+        }
+
+        if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()) {
+            selectedVariants.getFirst().group().ifPresent(location -> {
+                if (location.equals(MixedLitter.location("default")))
+                    selectedVariants.remove(selectedVariants.getFirst());
+            });
         }
 
         if (!selectedVariants.isEmpty()) {
@@ -202,8 +221,11 @@ public class VariantUtil {
         ArrayList<Variant> selectedVariants = new ArrayList<>();
 
 
+        boolean replaceDefault = false;
+
         for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
             VariantGroup group = variantGroupHolder.value();
+            if (group.replaceDefault()) replaceDefault = true;
 
             if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity))
                 continue;
@@ -245,9 +267,18 @@ public class VariantUtil {
             }
         }
 
+        newVariants.addAll(selectedVariants);
+
         Map<ResourceLocation, List<Variant>> groupedVariants = new HashMap<>();
 
         for (Variant variant : new ArrayList<>(newVariants)) {
+            if (replaceDefault) {
+                variant.group().ifPresent(location -> {
+                    if (location.equals(MixedLitter.location("default")))
+                        newVariants.remove(variant);
+                });
+            }
+
             if (variant.group().isPresent()) {
                 ResourceLocation groupId = variant.group().get();
                 VariantGroup group = variantGroupRegistry.get(groupId);
@@ -269,7 +300,12 @@ public class VariantUtil {
             }
         }
 
-        newVariants.addAll(selectedVariants);
+        if (newVariants.size() == 1 && newVariants.getFirst().group().isPresent()) {
+            selectedVariants.getFirst().group().ifPresent(location -> {
+                if (location.equals(MixedLitter.location("default")))
+                    newVariants.remove(newVariants.getFirst());
+            });
+        }
 
         if (!newVariants.equals(oldVariants)) {
             setVariants(entity, newVariants);

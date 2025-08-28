@@ -1,7 +1,7 @@
 package dev.tazer.mixed_litter.client;
 
 import dev.tazer.mixed_litter.MixedLitter;
-import dev.tazer.mixed_litter.models.*;
+import dev.tazer.mixed_litter.client.models.*;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

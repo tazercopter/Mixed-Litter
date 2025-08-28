@@ -1,4 +1,4 @@
-package dev.tazer.mixed_litter.models;
+package dev.tazer.mixed_litter.client.models;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
