@@ -301,7 +301,7 @@ public class VariantUtil {
         }
 
         if (newVariants.size() == 1 && newVariants.getFirst().group().isPresent()) {
-            selectedVariants.getFirst().group().ifPresent(location -> {
+            newVariants.getFirst().group().ifPresent(location -> {
                 if (location.equals(MixedLitter.location("default")))
                     newVariants.remove(newVariants.getFirst());
             });
