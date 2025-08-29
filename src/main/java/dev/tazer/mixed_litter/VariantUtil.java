@@ -18,7 +18,7 @@ import java.util.*;
 public class VariantUtil {
 
     public static List<Variant> getVariants(Entity entity) {
-        return lookupVariantIds(entity.getData(DataAttachmentTypes.VARIANTS), entity.registryAccess());
+        return entity.hasData(DataAttachmentTypes.VARIANTS) ? lookupVariantIds(entity.getData(DataAttachmentTypes.VARIANTS), entity.registryAccess()) : List.of();
     }
 
     public static List<Variant> lookupVariantIds(List<ResourceLocation> variants, RegistryAccess access) {
@@ -183,7 +183,8 @@ public class VariantUtil {
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
         variants.forEach(variant -> Optional.ofNullable(variantRegistry.getKey(variant)).map(variantLocations::add));
 
-        entity.setData(DataAttachmentTypes.VARIANTS, variantLocations);
+        if (!variantLocations.isEmpty()) entity.setData(DataAttachmentTypes.VARIANTS, variantLocations);
+        else entity.removeData(DataAttachmentTypes.VARIANTS);
     }
 
     public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {

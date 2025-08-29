@@ -1,8 +1,0 @@
-{
-  "type": "mixed_litter:bee",
-  "texture": "minecraft:entity/bee/bee",
-  "angry_texture": "minecraft:entity/bee/bee_angry",
-  "nectar_texture": "minecraft:entity/bee/bee_nectar",
-  "angry_nectar_texture": "minecraft:entity/bee/bee_angry_nectar",
-  "stinger_texture": "minecraft:entity/bee/bee_stinger"
-}
