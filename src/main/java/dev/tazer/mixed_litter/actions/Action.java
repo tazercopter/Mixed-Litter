@@ -4,16 +4,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.tazer.mixed_litter.Registries;
+import dev.tazer.mixed_litter.MLRegistries;
 import net.minecraft.util.ExtraCodecs;
 
 import java.util.LinkedHashMap;
 
-public record Action(ActionType type, JsonObject arguments) {
+public record Action(VariantActionType type, JsonObject arguments) {
 
     public static final Codec<Action> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
-                    Registries.ACTION_TYPES.byNameCodec().fieldOf("type").forGetter(Action::type),
+                    MLRegistries.VARIANT_ACTION_TYPES.byNameCodec().fieldOf("type").forGetter(Action::type),
                     Codec.unboundedMap(Codec.STRING, ExtraCodecs.JSON)
                             .xmap(map -> {
                                 var jsonObject = new JsonObject();

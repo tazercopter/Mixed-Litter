@@ -1,7 +1,7 @@
 package dev.tazer.mixed_litter.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.tazer.mixed_litter.DataAttachmentTypes;
+import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.Entity;
@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BeehiveOccupantMixin {
     @Inject(method = "createEntity", at = @At("RETURN"))
     private void addSpawningLocation(Level level, BlockPos pos, CallbackInfoReturnable<Entity> cir, @Local Entity entity) {
-        if (entity != null && !entity.hasData(DataAttachmentTypes.SPAWN_LOCATION)) {
-            entity.setData(DataAttachmentTypes.SPAWN_LOCATION, GlobalPos.of(level.dimension(), pos));
+        if (entity != null && !entity.hasData(MLDataAttachmentTypes.SPAWN_LOCATION)) {
+            entity.setData(MLDataAttachmentTypes.SPAWN_LOCATION, GlobalPos.of(level.dimension(), pos));
         }
     }
 }

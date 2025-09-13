@@ -1,12 +1,14 @@
-package dev.tazer.mixed_litter;
+package dev.tazer.mixed_litter.registry;
 
+import dev.tazer.mixed_litter.MLRegistries;
+import dev.tazer.mixed_litter.MixedLitter;
 import dev.tazer.mixed_litter.actions.*;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
-public class ActionTypes {
-    public static final DeferredRegister<ActionType> ACTION_TYPES = DeferredRegister.create(Registries.ACTION_TYPES, MixedLitter.MODID);
+public class MLActionTypes {
+    public static final DeferredRegister<VariantActionType> ACTION_TYPES = DeferredRegister.create(MLRegistries.VARIANT_ACTION_TYPES, MixedLitter.MODID);
 
     public static final Supplier<SetTexture> SET_TEXTURE = register("set_texture", SetTexture::new);
     public static final Supplier<ReplaceTextures> REPLACE_TEXTURES = register("replace_textures", ReplaceTextures::new);
@@ -14,7 +16,7 @@ public class ActionTypes {
     public static final Supplier<SetSheepFurLayer> SET_SHEEP_FUR_LAYER = register("set_sheep_fur_layer", SetSheepFurLayer::new);
     public static final Supplier<SetMooshroomMushroom> SET_MOOSHROOM_MUSHROOM = register("set_mooshroom_mushroom", SetMooshroomMushroom::new);
 
-    public static <T extends ActionType> Supplier<T> register(String name, Supplier<T> actionType) {
+    public static <T extends VariantActionType> Supplier<T> register(String name, Supplier<T> actionType) {
         return ACTION_TYPES.register(name, actionType);
     }
 }

@@ -3,8 +3,8 @@ package dev.tazer.mixed_litter.variants;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.tazer.mixed_litter.DataAttachmentTypes;
 import dev.tazer.mixed_litter.Config;
+import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.core.BlockPos;
@@ -36,8 +36,8 @@ public record EntityConditions(Optional<ConfigCondition> configCondition, Option
             if (booleanValue.get() != configCondition.get().status()) return false;
         }
 
-        if (entity.hasData(DataAttachmentTypes.SPAWN_LOCATION) && spawningLocation.isPresent()) {
-            GlobalPos globalPos = entity.getData(DataAttachmentTypes.SPAWN_LOCATION);
+        if (entity.hasData(MLDataAttachmentTypes.SPAWN_LOCATION) && spawningLocation.isPresent()) {
+            GlobalPos globalPos = entity.getData(MLDataAttachmentTypes.SPAWN_LOCATION);
             BlockPos pos = globalPos.pos();
             ServerLevel dimensionLevel = level.getServer().getLevel(globalPos.dimension());
             if (dimensionLevel == null || !spawningLocation.get().matches(dimensionLevel, pos.getX(), pos.getY(), pos.getZ())) return false;

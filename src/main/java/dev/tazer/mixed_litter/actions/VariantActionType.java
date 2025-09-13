@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.Map;
 
-public interface ActionType {
+public interface VariantActionType {
 
     void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs);
 

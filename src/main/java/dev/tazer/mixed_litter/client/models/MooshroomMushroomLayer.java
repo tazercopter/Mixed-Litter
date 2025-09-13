@@ -4,8 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.Action;
-import dev.tazer.mixed_litter.actions.ActionType;
 import dev.tazer.mixed_litter.actions.SetMooshroomMushroom;
+import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.client.ModelLayers;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantType;
@@ -45,7 +45,7 @@ public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T
                 for (Variant variant : VariantUtil.getVariants(livingEntity)) {
                     VariantType variantType = VariantUtil.getType(livingEntity, variant);
                     for (Action action : variantType.actions()) {
-                        ActionType actionType = action.type();
+                        VariantActionType actionType = action.type();
 
                         actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
 

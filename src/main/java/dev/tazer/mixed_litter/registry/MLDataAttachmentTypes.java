@@ -1,8 +1,8 @@
-package dev.tazer.mixed_litter;
+package dev.tazer.mixed_litter.registry;
 
 import com.mojang.serialization.Codec;
+import dev.tazer.mixed_litter.MixedLitter;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,7 +14,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class DataAttachmentTypes {
+public class MLDataAttachmentTypes {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MixedLitter.MODID);
 
     public static final Supplier<AttachmentType<List<ResourceLocation>>> VARIANTS = register("variants", List.of(), ResourceLocation.CODEC.listOf(), ByteBufCodecs.fromCodec(ResourceLocation.CODEC.listOf()));

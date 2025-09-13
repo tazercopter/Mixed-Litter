@@ -1,6 +1,6 @@
 package dev.tazer.mixed_litter.mixin;
 
-import dev.tazer.mixed_litter.DataAttachmentTypes;
+import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 @Mixin(Bucketable.class)
@@ -23,9 +22,9 @@ public interface BucketableMixin {
     @Inject(method = "saveDefaultDataToBucketTag", at = @At("TAIL"))
     private static void saveVariantDataToBucketTag(Mob mob, ItemStack bucket, CallbackInfo ci) {
         CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> {
-            if (mob.hasData(DataAttachmentTypes.VARIANTS)) {
+            if (mob.hasData(MLDataAttachmentTypes.VARIANTS)) {
                 StringBuilder variants = new StringBuilder();
-                for (ResourceLocation resourceLocation : mob.getData(DataAttachmentTypes.VARIANTS)) {
+                for (ResourceLocation resourceLocation : mob.getData(MLDataAttachmentTypes.VARIANTS)) {
                     variants.append(resourceLocation.toString()).append(", ");
                 }
 
@@ -42,7 +41,7 @@ public interface BucketableMixin {
                 Optional.ofNullable(ResourceLocation.tryParse(variant)).map(variants::add);
             }
 
-            if (!variants.isEmpty()) mob.setData(DataAttachmentTypes.VARIANTS, variants);
+            if (!variants.isEmpty()) mob.setData(MLDataAttachmentTypes.VARIANTS, variants);
         }
     }
 }

@@ -7,13 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReplaceTextures implements ActionType {
+public class ReplaceTextures implements VariantActionType {
     public Map<ResourceLocation, ResourceLocation> replacements;
 
 
     @Override
     public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
-        JsonObject arguments = ActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);
+        JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);
 
         JsonElement replacementsElement = arguments.get("replacements");
         JsonObject replacementsObject = replacementsElement.getAsJsonObject();

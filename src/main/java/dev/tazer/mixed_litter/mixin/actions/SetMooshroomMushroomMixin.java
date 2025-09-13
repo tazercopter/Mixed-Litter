@@ -1,11 +1,10 @@
 package dev.tazer.mixed_litter.mixin.actions;
 
-import com.google.errorprone.annotations.Var;
-import dev.tazer.mixed_litter.Registries;
+import dev.tazer.mixed_litter.MLRegistries;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.Action;
-import dev.tazer.mixed_litter.actions.ActionType;
 import dev.tazer.mixed_litter.actions.SetMooshroomMushroom;
+import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
 import dev.tazer.mixed_litter.variants.VariantType;
@@ -32,7 +31,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.UUID;
 
 import static dev.tazer.mixed_litter.VariantUtil.selectVariant;
 import static dev.tazer.mixed_litter.VariantUtil.setVariants;
@@ -51,8 +51,8 @@ public abstract class SetMooshroomMushroomMixin {
         UUID uuid = lightning.getUUID();
 
         if (!uuid.equals(lastLightningBoltUUID)) {
-            Registry<VariantGroup> variantGroupRegistry = self.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
-            Registry<Variant> variantRegistry = self.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+            Registry<VariantGroup> variantGroupRegistry = self.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+            Registry<Variant> variantRegistry = self.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
             ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
             ArrayList<Variant> selectedVariants = new ArrayList<>();
 
@@ -112,7 +112,7 @@ public abstract class SetMooshroomMushroomMixin {
             for (Variant variant : VariantUtil.getVariants(self)) {
                 VariantType variantType = VariantUtil.getType(self, variant);
                 for (Action action : variantType.actions()) {
-                    ActionType actionType = action.type();
+                    VariantActionType actionType = action.type();
 
                     actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
 

@@ -1,7 +1,8 @@
 package dev.tazer.mixed_litter.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.tazer.mixed_litter.*;
+import dev.tazer.mixed_litter.Config;
+import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.*;
 import dev.tazer.mixed_litter.client.ModelLayers;
 import dev.tazer.mixed_litter.client.models.*;
@@ -73,7 +74,7 @@ public class RenderEntityVariantMixin<T extends LivingEntity, M extends EntityMo
             for (Variant variant : variants) {
                 VariantType variantType = VariantUtil.getType(livingEntity, variant);
                 for (Action action : variantType.actions()) {
-                    ActionType actionType = action.type();
+                    VariantActionType actionType = action.type();
 
                     actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
 

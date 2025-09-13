@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.tazer.mixed_litter.Config;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.Action;
-import dev.tazer.mixed_litter.actions.ActionType;
 import dev.tazer.mixed_litter.actions.SetSheepFurLayer;
+import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.client.ModelLayers;
 import dev.tazer.mixed_litter.client.models.SheepRemodel;
 import dev.tazer.mixed_litter.variants.Variant;
@@ -57,7 +57,7 @@ public abstract class SetSheepFurLayerMixin {
         for (Variant variant : VariantUtil.getVariants(sheep)) {
             VariantType variantType = VariantUtil.getType(sheep, variant);
             for (Action action : variantType.actions()) {
-                ActionType actionType = action.type();
+                VariantActionType actionType = action.type();
 
                 actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
 

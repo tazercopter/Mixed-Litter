@@ -1,6 +1,7 @@
 package dev.tazer.mixed_litter;
 
 import com.google.gson.JsonElement;
+import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
 import dev.tazer.mixed_litter.variants.VariantType;
@@ -18,11 +19,11 @@ import java.util.*;
 public class VariantUtil {
 
     public static List<Variant> getVariants(Entity entity) {
-        return entity.hasData(DataAttachmentTypes.VARIANTS) ? lookupVariantIds(entity.getData(DataAttachmentTypes.VARIANTS), entity.registryAccess()) : List.of();
+        return entity.hasData(MLDataAttachmentTypes.VARIANTS) ? lookupVariantIds(entity.getData(MLDataAttachmentTypes.VARIANTS), entity.registryAccess()) : List.of();
     }
 
     public static List<Variant> lookupVariantIds(List<ResourceLocation> variants, RegistryAccess access) {
-        Registry<Variant> variantRegistry = access.registryOrThrow(Registries.VARIANT_KEY);
+        Registry<Variant> variantRegistry = access.registryOrThrow(MLRegistries.VARIANT_KEY);
         ArrayList<Variant> variantList = new ArrayList<>(variants.size());
         for (ResourceLocation id : variants)
             variantRegistry.getOptional(id).ifPresent(variantList::add);
@@ -66,8 +67,8 @@ public class VariantUtil {
 
     public static void applySuitableVariants(Entity entity) {
         ServerLevel serverLevel = (ServerLevel) entity.level();
-        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
         ArrayList<Variant> selectedVariants = new ArrayList<>();
         boolean replaceDefault = false;
@@ -180,11 +181,11 @@ public class VariantUtil {
 
     public static void setVariants(Entity entity, List<Variant> variants) {
         List<ResourceLocation> variantLocations = new ArrayList<>();
-        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         variants.forEach(variant -> Optional.ofNullable(variantRegistry.getKey(variant)).map(variantLocations::add));
 
-        if (!variantLocations.isEmpty()) entity.setData(DataAttachmentTypes.VARIANTS, variantLocations);
-        else entity.removeData(DataAttachmentTypes.VARIANTS);
+        if (!variantLocations.isEmpty()) entity.setData(MLDataAttachmentTypes.VARIANTS, variantLocations);
+        else entity.removeData(MLDataAttachmentTypes.VARIANTS);
     }
 
     public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {
@@ -193,8 +194,8 @@ public class VariantUtil {
 
         ServerLevel serverLevel = (ServerLevel) child.level();
 
-        Registry<VariantGroup> variantGroupRegistry = child.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = child.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        Registry<VariantGroup> variantGroupRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
         ArrayList<Variant> childVariants = new ArrayList<>();
 
@@ -240,8 +241,8 @@ public class VariantUtil {
     public static void validateVariants(Entity entity) {
         List<Variant> oldVariants = getVariants(entity);
         ArrayList<Variant> newVariants = new ArrayList<>(oldVariants);
-        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_KEY);
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ServerLevel serverLevel = (ServerLevel) entity.level();
 
         for (Variant variant : oldVariants) {
@@ -428,13 +429,13 @@ public class VariantUtil {
     }
 
     public static @Nullable VariantGroup getGroup(Entity entity, Variant variant) {
-        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_GROUP_KEY);
+        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
 
         return variant.group().map(variantGroupRegistry::get).orElse(null);
     }
 
     public static VariantType getType(Entity entity, Variant variant) {
-        Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(Registries.VARIANT_TYPE_KEY);
+        Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_TYPE_KEY);
 
         return variantTypeRegistry.get(variant.type());
     }
