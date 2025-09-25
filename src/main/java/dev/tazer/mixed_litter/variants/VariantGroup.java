@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.Cod;
 
 import java.util.List;
 import java.util.Optional;

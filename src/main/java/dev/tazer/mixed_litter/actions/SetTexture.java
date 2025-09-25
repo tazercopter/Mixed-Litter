@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 public class SetTexture implements VariantActionType {
     public ResourceLocation texture;
 
-
     @Override
     public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
         JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);

@@ -41,28 +41,30 @@ public class RenderEntityVariantMixin<T extends LivingEntity, M extends EntityMo
 
     @Inject(method = "getRenderType", at = @At(value = "HEAD"))
     public void storeRenderTypeVariables(T livingEntity, boolean bodyVisible, boolean translucent, boolean glowing, CallbackInfoReturnable<RenderType> cir) {
-        if (Config.PIG.get() && livingEntity.getType() == EntityType.PIG && model instanceof PigModel) {
-            model = (M) new PigRemodel<>(CONTEXT.bakeLayer(ModelLayers.PIG_LAYER));
-        }
+        if (Config.STARTUP_CONFIG.isLoaded()) {
+            if (Config.PIG.get() && livingEntity.getType() == EntityType.PIG && model instanceof PigModel) {
+                model = (M) new PigRemodel<>(CONTEXT.bakeLayer(ModelLayers.PIG_LAYER));
+            }
 
-        if (Config.CHICKEN.get() && livingEntity.getType() == EntityType.CHICKEN && model instanceof ChickenModel) {
-            model = (M) new ChickenRemodel<>(CONTEXT.bakeLayer(ModelLayers.CHICKEN_LAYER));
-        }
+            if (Config.CHICKEN.get() && livingEntity.getType() == EntityType.CHICKEN && model instanceof ChickenModel) {
+                model = (M) new ChickenRemodel<>(CONTEXT.bakeLayer(ModelLayers.CHICKEN_LAYER));
+            }
 
-        if (Config.COW.get() && (livingEntity.getType() == EntityType.COW || livingEntity.getType() == EntityType.MOOSHROOM) && model instanceof CowModel) {
-            model = (M) new CowRemodel<>(CONTEXT.bakeLayer(ModelLayers.COW_LAYER));
-        }
+            if (Config.COW.get() && (livingEntity.getType() == EntityType.COW || livingEntity.getType() == EntityType.MOOSHROOM) && model instanceof CowModel) {
+                model = (M) new CowRemodel<>(CONTEXT.bakeLayer(ModelLayers.COW_LAYER));
+            }
 
-        if (Config.SHEEP.get() && livingEntity.getType() == EntityType.SHEEP && model instanceof SheepModel) {
-            model = (M) new SheepRemodel<>(CONTEXT.bakeLayer(ModelLayers.SHEEP_LAYER));
-        }
+            if (Config.SHEEP.get() && livingEntity.getType() == EntityType.SHEEP && model instanceof SheepModel) {
+                model = (M) new SheepRemodel<>(CONTEXT.bakeLayer(ModelLayers.SHEEP_LAYER));
+            }
 
-        if (Config.SQUID.get() && (livingEntity.getType() == EntityType.SQUID || livingEntity.getType() == EntityType.GLOW_SQUID) && model instanceof SquidModel) {
-            model = (M) new SquidRemodel<>(CONTEXT.bakeLayer(ModelLayers.SQUID_LAYER));
-        }
+            if (Config.SQUID.get() && (livingEntity.getType() == EntityType.SQUID || livingEntity.getType() == EntityType.GLOW_SQUID) && model instanceof SquidModel) {
+                model = (M) new SquidRemodel<>(CONTEXT.bakeLayer(ModelLayers.SQUID_LAYER));
+            }
 
-        if (Config.RABBIT.get() && livingEntity.getType() == EntityType.RABBIT && model instanceof RabbitModel) {
-            model = (M) new RabbitRemodel<>(CONTEXT.bakeLayer(ModelLayers.RABBIT_LAYER));
+            if (Config.RABBIT.get() && livingEntity.getType() == EntityType.RABBIT && model instanceof RabbitModel) {
+                model = (M) new RabbitRemodel<>(CONTEXT.bakeLayer(ModelLayers.RABBIT_LAYER));
+            }
         }
     }
 

@@ -12,8 +12,7 @@
   "client": [
     "MushroomCowRendererMixin",
     "RenderEntityVariantMixin",
-    "actions.SetSheepFurLayerMixin",
-    "layers.SaddleLayerMixin"
+    "actions.SetSheepFurLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

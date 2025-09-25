@@ -31,7 +31,7 @@ public record EntityConditions(Optional<ConfigCondition> configCondition, Option
         if (unobtainable) return false;
 
         if (configCondition.isPresent()) {
-            UnmodifiableConfig config = Config.CLIENT_CONFIG.getValues().get("animal_remodels");
+            UnmodifiableConfig config = Config.STARTUP_CONFIG.getValues().get("animal_remodels");
             ModConfigSpec.BooleanValue booleanValue = config.get(configCondition.get().path() + "Remodel");
             if (booleanValue.get() != configCondition.get().status()) return false;
         }

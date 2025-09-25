@@ -10,7 +10,6 @@ import java.util.Map;
 public class ReplaceTextures implements VariantActionType {
     public Map<ResourceLocation, ResourceLocation> replacements;
 
-
     @Override
     public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
         JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);

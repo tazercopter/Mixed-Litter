@@ -25,7 +25,7 @@ public class MixedLitter {
         MLDataAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
         MLActionTypes.ACTION_TYPES.register(modEventBus);
 
-        modContainer.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG);
+        modContainer.registerConfig(ModConfig.Type.STARTUP, Config.STARTUP_CONFIG);
     }
 
     private void registerRegistries(final NewRegistryEvent event) {

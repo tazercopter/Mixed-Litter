@@ -3,11 +3,15 @@ package dev.tazer.mixed_litter.client.models;
 import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Saddleable;
 
-public class PigRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
+public class PigRemodel<T extends AgeableMob & Saddleable> extends QuadrupedModel<T> {
 
     private final ModelPart headBaby;
     private final ModelPart rightFrontLegBaby;
@@ -38,7 +42,6 @@ public class PigRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
                 .texOffs(0, 26).addBox(-5, -5, -9, 10, 5, 1)
                 .texOffs(22, 26).mirror().addBox(-3, 2, -11, 2, 2, 3).mirror(false)
                 .texOffs(32, 26).mirror().addBox(1, 2, -11, 2, 2, 3).mirror(false), PartPose.offset(0, 16, 0));
-
 
         head.addOrReplaceChild("snout", CubeListBuilder.create().texOffs(0, 6).addBox(-2, -1.5F, -2, 4, 3, 2), PartPose.offset(0, 1.5F, -8));
 
@@ -86,10 +89,12 @@ public class PigRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
         headBaby.yScale = 2;
         headBaby.zScale = 2;
 
-        head.xRot = headPitch * 0.017453292F / 2;
+        if (!pig.hasControllingPassenger()) head.xRot = headPitch * 0.017453292F / 2;
         head.yRot = netHeadYaw * 0.017453292F / 4;
         headBaby.xRot = head.xRot / 2;
         headBaby.yRot = head.yRot / 2;
+        body.xRot = head.xRot;
+        body.yRot = head.yRot;
 
         rightHindLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.7F * limbSwingAmount;
         leftHindLeg.xRot = Mth.cos(limbSwing * 0.6662F + 3.1415927F) * 1.7F * limbSwingAmount;
