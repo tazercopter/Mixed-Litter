@@ -2,7 +2,7 @@
   "type": "mixed_litter:ageable_texture",
   "group": "mixed_litter:remodeled_cows",
   "arguments": {
-    "texture": "mixed_litter:entity/cow",
-    "baby_texture": "mixed_litter:entity/cow_baby"
+    "texture": "mixed_litter:entity/cow/cow",
+    "baby_texture": "mixed_litter:entity/cow/cow_baby"
   }
 }

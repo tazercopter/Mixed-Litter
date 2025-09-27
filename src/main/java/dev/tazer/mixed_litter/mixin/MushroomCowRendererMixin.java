@@ -16,6 +16,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MushroomCowRendererMixin {
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/MushroomCowRenderer;addLayer(Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z"))
     private boolean addLayer(MushroomCowRenderer instance, RenderLayer<MushroomCow, CowModel<MushroomCow>> renderLayer, @Local(argsOnly = true) EntityRendererProvider.Context context) {
-        return Config.COW.get() ? instance.addLayer(new MooshroomMushroomLayer<>(instance, context.getBlockRenderDispatcher(), context.getModelSet())) : instance.addLayer(renderLayer);
+        return Config.COW_REMODEL.get() ? instance.addLayer(new MooshroomMushroomLayer<>(instance, context.getBlockRenderDispatcher(), context.getModelSet())) : instance.addLayer(renderLayer);
     }
 }

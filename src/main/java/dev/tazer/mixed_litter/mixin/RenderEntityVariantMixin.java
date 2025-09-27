@@ -12,10 +12,13 @@ import net.minecraft.client.model.*;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.animal.Rabbit;
+import net.minecraft.world.entity.animal.Sheep;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,27 +45,31 @@ public class RenderEntityVariantMixin<T extends LivingEntity, M extends EntityMo
     @Inject(method = "getRenderType", at = @At(value = "HEAD"))
     public void storeRenderTypeVariables(T livingEntity, boolean bodyVisible, boolean translucent, boolean glowing, CallbackInfoReturnable<RenderType> cir) {
         if (Config.STARTUP_CONFIG.isLoaded()) {
-            if (Config.PIG.get() && livingEntity.getType() == EntityType.PIG && model instanceof PigModel) {
-                model = (M) new PigRemodel<>(CONTEXT.bakeLayer(ModelLayers.PIG_LAYER));
+            String key = BuiltInRegistries.ENTITY_TYPE.getKey(livingEntity.getType()).toString();
+
+            if (livingEntity instanceof AgeableMob) {
+                if (Config.PIG_REMODEL.get() && livingEntity instanceof Saddleable && Config.PIGS.get().contains(key) && model instanceof PigModel) {
+                    model = (M) new PigRemodel<>(CONTEXT.bakeLayer(ModelLayers.PIG_LAYER));
+                }
+
+                if (Config.CHICKEN_REMODEL.get() && Config.CHICKENS.get().contains(key) && model instanceof ChickenModel) {
+                    model = (M) new ChickenRemodel<>(CONTEXT.bakeLayer(ModelLayers.CHICKEN_LAYER));
+                }
+
+                if (Config.COW_REMODEL.get() && Config.COWS.get().contains(key) && model instanceof CowModel) {
+                    model = (M) new CowRemodel<>(CONTEXT.bakeLayer(ModelLayers.COW_LAYER));
+                }
             }
 
-            if (Config.CHICKEN.get() && livingEntity.getType() == EntityType.CHICKEN && model instanceof ChickenModel) {
-                model = (M) new ChickenRemodel<>(CONTEXT.bakeLayer(ModelLayers.CHICKEN_LAYER));
-            }
-
-            if (Config.COW.get() && (livingEntity.getType() == EntityType.COW || livingEntity.getType() == EntityType.MOOSHROOM) && model instanceof CowModel) {
-                model = (M) new CowRemodel<>(CONTEXT.bakeLayer(ModelLayers.COW_LAYER));
-            }
-
-            if (Config.SHEEP.get() && livingEntity.getType() == EntityType.SHEEP && model instanceof SheepModel) {
+            if (Config.SHEEP_REMODEL.get() && livingEntity instanceof Sheep && Config.SHEEP.get().contains(key) && model instanceof SheepModel) {
                 model = (M) new SheepRemodel<>(CONTEXT.bakeLayer(ModelLayers.SHEEP_LAYER));
             }
 
-            if (Config.SQUID.get() && (livingEntity.getType() == EntityType.SQUID || livingEntity.getType() == EntityType.GLOW_SQUID) && model instanceof SquidModel) {
+            if (Config.SQUID_REMODEL.get() && Config.SQUIDS.get().contains(key) && model instanceof SquidModel) {
                 model = (M) new SquidRemodel<>(CONTEXT.bakeLayer(ModelLayers.SQUID_LAYER));
             }
 
-            if (Config.RABBIT.get() && livingEntity.getType() == EntityType.RABBIT && model instanceof RabbitModel) {
+            if (Config.RABBIT_REMODEL.get() && livingEntity instanceof Rabbit && Config.RABBITS.get().contains(key) && model instanceof RabbitModel) {
                 model = (M) new RabbitRemodel<>(CONTEXT.bakeLayer(ModelLayers.RABBIT_LAYER));
             }
         }

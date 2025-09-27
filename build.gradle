@@ -93,6 +93,13 @@ repositories {
 }
 
 dependencies {
+    jarJar(implementation("com.moulberry:mixinconstraints:1.0.7") {
+        exclude group: "org.slf4j",
+                module: "slf4j-api"
+    })
+
+    compileOnly "maven.modrinth:buzzier-bees:7.0.1"
+    compileOnly "maven.modrinth:blueprint:8.0.6"
     localRuntime "me.djtheredstoner:DevAuth-neoforge:1.2.1"
 }
 

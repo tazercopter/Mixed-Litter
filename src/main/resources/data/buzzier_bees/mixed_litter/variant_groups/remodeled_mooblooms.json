@@ -1,0 +1,20 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "buzzier_bees"
+    }
+  ],
+  "conditions": {
+    "remodel": {
+      "type": "cow",
+      "status": true
+    },
+    "entity_predicate": {
+      "type": "buzzier_bees:moobloom"
+    }
+  },
+  "exclusive": true,
+  "replace_default": true,
+  "selection": "weighted"
+}

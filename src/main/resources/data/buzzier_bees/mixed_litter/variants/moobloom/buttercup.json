@@ -1,0 +1,14 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "buzzier_bees"
+    }
+  ],
+  "type": "mixed_litter:ageable_texture",
+  "group": "buzzier_bees:remodeled_mooblooms",
+  "arguments": {
+    "texture": "mixed_litter:entity/moobloom/moobloom",
+    "baby_texture": "mixed_litter:entity/moobloom/moobloom_baby"
+  }
+}
