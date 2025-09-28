@@ -44,7 +44,12 @@ public class Events {
             Mob parentA = event.getParentA();
             Mob parentB = event.getParentB();
 
-            child.setData(MLDataAttachmentTypes.SPAWN_LOCATION, parentA.getData(MLDataAttachmentTypes.SPAWN_LOCATION));
+            GlobalPos spawnLocation = GlobalPos.of(child.level().dimension(), child.blockPosition());
+
+            if (parentA.hasData(MLDataAttachmentTypes.SPAWN_LOCATION)) spawnLocation = parentA.getData(MLDataAttachmentTypes.SPAWN_LOCATION);
+            else if (parentB.hasData(MLDataAttachmentTypes.SPAWN_LOCATION)) spawnLocation = parentB.getData(MLDataAttachmentTypes.SPAWN_LOCATION);
+
+            child.setData(MLDataAttachmentTypes.SPAWN_LOCATION, spawnLocation);
             setChildVariant(parentA, parentB, child);
         }
     }

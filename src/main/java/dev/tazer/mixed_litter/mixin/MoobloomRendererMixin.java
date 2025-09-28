@@ -18,6 +18,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MoobloomRendererMixin {
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/teamabnormals/buzzier_bees/client/render/entity/MoobloomRenderer;addLayer(Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z"))
     private boolean addLayer(MoobloomRenderer instance, RenderLayer<Moobloom, CowModel<Moobloom>> renderLayer, @Local(argsOnly = true) EntityRendererProvider.Context context) {
-        return Config.COW_REMODEL.get() ? instance.addLayer(new MoobloomFlowerLayer<>(instance, context.getModelSet())) : instance.addLayer(renderLayer);
+        return (Config.STARTUP_CONFIG.isLoaded() && Config.COW_REMODEL.get()) ? instance.addLayer(new MoobloomFlowerLayer<>(instance, context.getModelSet())) : instance.addLayer(renderLayer);
     }
 }
