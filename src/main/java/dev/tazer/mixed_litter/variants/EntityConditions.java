@@ -43,10 +43,6 @@ public record EntityConditions(Optional<ConfigCondition> configCondition, Option
             if (dimensionLevel == null || !spawningLocation.get().matches(dimensionLevel, pos.getX(), pos.getY(), pos.getZ())) return false;
         }
 
-        if (predicate.isPresent()) {
-            if (!predicate.get().matches(level, position, entity)) return false;
-        }
-
-        return true;
+        return predicate.map(entityPredicate -> entityPredicate.matches(level, position, entity)).orElse(true);
     }
 }

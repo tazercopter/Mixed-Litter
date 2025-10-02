@@ -5,6 +5,7 @@ import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.AgeableMob;
 
 public class ChickenRemodel<T extends AgeableMob> extends AgeableListModel<T> {
@@ -85,8 +86,8 @@ public class ChickenRemodel<T extends AgeableMob> extends AgeableListModel<T> {
         headBaby.xRot = head.xRot / 2;
         headBaby.yRot = head.yRot / 2;
 
-//        rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-//        leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + 3.1415927F) * 1.4F * limbSwingAmount;
+        rightLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+        leftLeg.xRot = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount;
 
         rightWing.zRot = ageInTicks;
         leftWing.zRot = -ageInTicks;

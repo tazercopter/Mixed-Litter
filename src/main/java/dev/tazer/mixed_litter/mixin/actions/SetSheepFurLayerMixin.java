@@ -21,9 +21,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.SheepFurLayer;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
@@ -51,7 +51,7 @@ public abstract class SetSheepFurLayerMixin {
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/Sheep;FFFFFF)V", at = @At("HEAD"), cancellable = true)
     private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        EntityModel<Sheep> model = Config.SHEEP_REMODEL.get() && sheep.getType() == EntityType.SHEEP ? sheepRemodel : this.model;
+        EntityModel<Sheep> model = Config.SHEEP_REMODEL.get() && Config.SHEEP.get().contains(BuiltInRegistries.ENTITY_TYPE.getKey(sheep.getType()).toString()) ? sheepRemodel : this.model;
         ResourceLocation furTexture = null; // todo: should there be an interaction when two variants applied have the setsheepfurlayer action?
 
         for (Variant variant : VariantUtil.getVariants(sheep)) {

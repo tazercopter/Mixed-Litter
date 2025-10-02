@@ -5,7 +5,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.Mob;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -41,16 +40,7 @@ public class Events {
         AgeableMob child = event.getChild();
 
         if (child != null && !child.level().isClientSide) {
-            Mob parentA = event.getParentA();
-            Mob parentB = event.getParentB();
-
-            GlobalPos spawnLocation = GlobalPos.of(child.level().dimension(), child.blockPosition());
-
-            if (parentA.hasData(MLDataAttachmentTypes.SPAWN_LOCATION)) spawnLocation = parentA.getData(MLDataAttachmentTypes.SPAWN_LOCATION);
-            else if (parentB.hasData(MLDataAttachmentTypes.SPAWN_LOCATION)) spawnLocation = parentB.getData(MLDataAttachmentTypes.SPAWN_LOCATION);
-
-            child.setData(MLDataAttachmentTypes.SPAWN_LOCATION, spawnLocation);
-            setChildVariant(parentA, parentB, child);
+            setChildVariant(event.getParentA(), event.getParentB(), child);
         }
     }
 
