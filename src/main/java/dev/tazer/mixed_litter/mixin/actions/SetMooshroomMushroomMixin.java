@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
@@ -103,10 +104,29 @@ public abstract class SetMooshroomMushroomMixin {
         ci.cancel();
     }
 
+    @Redirect(method = "mobInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/MushroomCow;getVariant()Lnet/minecraft/world/entity/animal/MushroomCow$MushroomType;"))
+    private MushroomCow.MushroomType hasBrownMushroom(MushroomCow instance) {
+        Block mushroom = null;
+        for (Variant variant : VariantUtil.getVariants(self)) {
+            VariantType variantType = VariantUtil.getType(self, variant);
+            for (Action action : variantType.actions()) {
+                VariantActionType actionType = action.type();
+
+                actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
+
+                if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
+                    mushroom = setMooshroomMushroom.mushroom;
+                    break;
+                }
+            }
+        }
+
+        return mushroom == Blocks.BROWN_MUSHROOM ? MushroomCow.MushroomType.BROWN : MushroomCow.MushroomType.RED;
+    }
+
     @Inject(method = "shear", at = @At("HEAD"), cancellable = true)
-    private void biodiversity$shear(SoundSource category, CallbackInfo ci) {
+    private void shear(SoundSource category, CallbackInfo ci) {
         if (self.level() instanceof ServerLevel serverLevel) {
-            // todo: make this randomise or mix or something between ALL variants the mooshroom has that contain mushrooms
             Block mushroom = null;
 
             for (Variant variant : VariantUtil.getVariants(self)) {
@@ -118,6 +138,7 @@ public abstract class SetMooshroomMushroomMixin {
 
                     if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
                         mushroom = setMooshroomMushroom.mushroom;
+                        break;
                     }
                 }
             }
@@ -143,12 +164,10 @@ public abstract class SetMooshroomMushroomMixin {
 
                     self.level().addFreshEntity(cow);
 
-                    if (mushroom != Blocks.AIR) {
-                        for (int i = 0; i < self.getRandom().nextInt(3, 7); ++i) {
-                            ItemEntity item = self.spawnAtLocation(new ItemStack(mushroom), self.getBbHeight());
-                            if (item != null) {
-                                item.setNoPickUpDelay();
-                            }
+                    for (int i = 0; i < self.getRandom().nextInt(3, 7); ++i) {
+                        ItemEntity item = self.spawnAtLocation(new ItemStack(mushroom), self.getBbHeight());
+                        if (item != null) {
+                            item.setNoPickUpDelay();
                         }
                     }
                 }

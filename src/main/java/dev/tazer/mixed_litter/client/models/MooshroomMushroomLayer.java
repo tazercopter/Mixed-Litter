@@ -39,7 +39,6 @@ public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T
         if (!livingEntity.isBaby()) {
             Minecraft minecraft = Minecraft.getInstance();
             if (!livingEntity.isInvisible() || minecraft.shouldEntityAppearGlowing(livingEntity)) {
-                // todo: make this randomise or mix or something between ALL variants the mooshroom has that contain mushrooms
                 Block mushroom = null;
 
                 for (Variant variant : VariantUtil.getVariants(livingEntity)) {
@@ -51,6 +50,7 @@ public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T
 
                         if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
                             mushroom = setMooshroomMushroom.mushroom;
+                            break;
                         }
                     }
                 }
