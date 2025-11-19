@@ -260,6 +260,7 @@ public class VariantUtil {
                     continue;
                 }
             }
+
             if (variant.conditions().isPresent()) {
                 if (!variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
                     newVariants.remove(variant);

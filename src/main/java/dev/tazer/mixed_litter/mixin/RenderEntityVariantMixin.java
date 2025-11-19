@@ -100,8 +100,7 @@ public class RenderEntityVariantMixin<T extends LivingEntity, M extends EntityMo
                                     return resourceLocationEntry.getValue();
                             }
                         }
-                        default -> {
-                        }
+                        default -> {}
                     }
                 }
             }

@@ -1,8 +1,6 @@
 package dev.tazer.mixed_litter.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -23,7 +21,6 @@ import static dev.tazer.mixed_litter.VariantUtil.setChildVariant;
 public class SpawnEggItemMixin {
     @Inject(method = "spawnOffspringFromSpawnEgg", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;moveTo(DDDFF)V", shift = At.Shift.AFTER))
     private void setOffspringVariant(Player player, Mob p_mob, EntityType<? extends Mob> entityType, ServerLevel serverLevel, Vec3 pos, ItemStack stack, CallbackInfoReturnable<Optional<Mob>> cir, @Local(ordinal = 1) Mob mob) {
-        mob.setData(MLDataAttachmentTypes.SPAWN_LOCATION, GlobalPos.of(p_mob.level().dimension(), p_mob.blockPosition()));
         setChildVariant(p_mob, p_mob, mob);
     }
 

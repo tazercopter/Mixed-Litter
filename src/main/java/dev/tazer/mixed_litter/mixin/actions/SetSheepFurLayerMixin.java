@@ -52,7 +52,7 @@ public abstract class SetSheepFurLayerMixin {
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/Sheep;FFFFFF)V", at = @At("HEAD"), cancellable = true)
     private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
         EntityModel<Sheep> model = Config.SHEEP_REMODEL.get() && Config.SHEEP.get().contains(BuiltInRegistries.ENTITY_TYPE.getKey(sheep.getType()).toString()) ? sheepRemodel : this.model;
-        ResourceLocation furTexture = null; // todo: should there be an interaction when two variants applied have the setsheepfurlayer action?
+        ResourceLocation furTexture = null;
 
         for (Variant variant : VariantUtil.getVariants(sheep)) {
             VariantType variantType = VariantUtil.getType(sheep, variant);
@@ -63,6 +63,7 @@ public abstract class SetSheepFurLayerMixin {
 
                 if (actionType instanceof SetSheepFurLayer setSheepFurLayer) {
                     furTexture = sheep.isBaby() ? setSheepFurLayer.babyTexture : sheep.isSheared() ? setSheepFurLayer.shearedTexture : setSheepFurLayer.texture;
+                    break;
                 }
             }
         }
