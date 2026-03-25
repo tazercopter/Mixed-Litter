@@ -1,10 +1,19 @@
 {
+  "defaults": {
+    "remodel": ""
+  },
   "actions": [
     {
       "type": "mixed_litter:set_ageable_texture",
       "arguments": {
         "texture": "texture",
         "baby_texture": "baby_texture"
+      }
+    },
+    {
+      "type": "mixed_litter:set_remodel",
+      "arguments": {
+        "remodel": "remodel"
       }
     }
   ]

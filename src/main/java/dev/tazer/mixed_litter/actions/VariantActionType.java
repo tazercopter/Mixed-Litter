@@ -3,13 +3,18 @@ package dev.tazer.mixed_litter.actions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 public interface VariantActionType {
 
-    void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs);
+    VariantActionType resolve(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs);
+
+    static ResourceLocation resolveTexturePath(String input) {
+        return ResourceLocation.parse(input).withPath(path -> "textures/entity/" + path);
+    }
 
     static JsonObject resolveArguments(JsonElement actionArgs, JsonObject variantArgs, JsonObject defaultArgs) {
         if (actionArgs == null) return null;
@@ -73,8 +78,6 @@ public interface VariantActionType {
                     resolveArguments(element, variantArgs, defaultArgs);
                 }
             }
-
-            return mutableArgs.getAsJsonObject();
         }
 
         return null;

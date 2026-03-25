@@ -18,7 +18,6 @@ public class MLDataAttachmentTypes {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MixedLitter.MODID);
 
     public static final Supplier<AttachmentType<List<ResourceLocation>>> VARIANTS = register("variants", List.of(), ResourceLocation.CODEC.listOf(), ByteBufCodecs.fromCodec(ResourceLocation.CODEC.listOf()));
-    public static final Supplier<AttachmentType<GlobalPos>> SPAWN_LOCATION = register("spawn_location", null, GlobalPos.CODEC, GlobalPos.STREAM_CODEC);
 
     public static <T> Supplier<AttachmentType<T>> register(String name, T defaultValue, Codec<T> codec, StreamCodec<ByteBuf, T> streamCodec) {
         return register(name, AttachmentType.builder(() -> defaultValue).serialize(codec).sync(streamCodec));

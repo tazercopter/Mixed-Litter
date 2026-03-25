@@ -3,12 +3,8 @@ package dev.tazer.mixed_litter.client.models;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tazer.mixed_litter.VariantUtil;
-import dev.tazer.mixed_litter.actions.Action;
 import dev.tazer.mixed_litter.actions.SetMooshroomMushroom;
-import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.client.ModelLayers;
-import dev.tazer.mixed_litter.variants.Variant;
-import dev.tazer.mixed_litter.variants.VariantType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.CowModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -21,12 +17,11 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.animal.MushroomCow;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T, CowModel<T>>  {
+public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T, CowModel<T>> {
     private final BlockRenderDispatcher blockRenderer;
-    private CowRemodel<MushroomCow> cowRemodel;
+    private final CowRemodel<MushroomCow> cowRemodel;
 
     public MooshroomMushroomLayer(RenderLayerParent<T, CowModel<T>> renderer, BlockRenderDispatcher blockRenderer, EntityModelSet modelSet) {
         super(renderer);
@@ -39,25 +34,11 @@ public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T
         if (!livingEntity.isBaby()) {
             Minecraft minecraft = Minecraft.getInstance();
             if (!livingEntity.isInvisible() || minecraft.shouldEntityAppearGlowing(livingEntity)) {
-                Block mushroom = null;
+                SetMooshroomMushroom mushroom = VariantUtil.findAction(livingEntity, SetMooshroomMushroom.class);
 
-                for (Variant variant : VariantUtil.getVariants(livingEntity)) {
-                    VariantType variantType = VariantUtil.getType(livingEntity, variant);
-                    for (Action action : variantType.actions()) {
-                        VariantActionType actionType = action.type();
-
-                        actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
-
-                        if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
-                            mushroom = setMooshroomMushroom.mushroom;
-                            break;
-                        }
-                    }
-                }
-
-                if (mushroom != null) {
+                if (mushroom != null && mushroom.getBlock() != null) {
                     boolean outlineOnly = minecraft.shouldEntityAppearGlowing(livingEntity) && livingEntity.isInvisible();
-                    BlockState blockstate = mushroom.defaultBlockState();
+                    BlockState blockstate = mushroom.getBlock().defaultBlockState();
                     int i = LivingEntityRenderer.getOverlayCoords(livingEntity, 0);
 
                     BakedModel bakedmodel = blockRenderer.getBlockModel(blockstate);

@@ -4,16 +4,23 @@ import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 
 public class SetSheepFurLayer implements VariantActionType {
-    public ResourceLocation texture;
-    public ResourceLocation babyTexture;
-    public ResourceLocation shearedTexture;
+    private boolean resolved;
+    private ResourceLocation texture;
+    private ResourceLocation babyTexture;
+    private ResourceLocation shearedTexture;
+
+    public ResourceLocation getTexture() { return resolved ? texture : null; }
+    public ResourceLocation getBabyTexture() { return resolved ? babyTexture : null; }
+    public ResourceLocation getShearedTexture() { return resolved ? shearedTexture : null; }
 
     @Override
-    public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+    public SetSheepFurLayer resolve(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+        SetSheepFurLayer result = new SetSheepFurLayer();
         JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);
-
-        texture = ResourceLocation.parse(arguments.get("texture").getAsString()).withPath(path -> "textures/" + path + ".png");
-        babyTexture = ResourceLocation.parse(arguments.get("baby_texture").getAsString()).withPath(path -> "textures/" + path + ".png");
-        shearedTexture = ResourceLocation.parse(arguments.get("sheared_texture").getAsString()).withPath(path -> "textures/" + path + ".png");
+        result.texture = VariantActionType.resolveTexturePath(arguments.get("texture").getAsString());
+        result.babyTexture = VariantActionType.resolveTexturePath(arguments.get("baby_texture").getAsString());
+        result.shearedTexture = VariantActionType.resolveTexturePath(arguments.get("sheared_texture").getAsString());
+        result.resolved = true;
+        return result;
     }
 }

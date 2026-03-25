@@ -3,109 +3,67 @@ package dev.tazer.mixed_litter.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import dev.tazer.mixed_litter.Config;
 import dev.tazer.mixed_litter.VariantUtil;
-import dev.tazer.mixed_litter.actions.*;
-import dev.tazer.mixed_litter.client.ModelLayers;
-import dev.tazer.mixed_litter.client.models.*;
-import dev.tazer.mixed_litter.variants.Variant;
-import dev.tazer.mixed_litter.variants.VariantType;
-import net.minecraft.client.model.*;
+import dev.tazer.mixed_litter.actions.SetRemodel;
+import dev.tazer.mixed_litter.client.RemodelRegistry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Saddleable;
-import net.minecraft.world.entity.animal.Rabbit;
-import net.minecraft.world.entity.animal.Sheep;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 @Mixin(value = LivingEntityRenderer.class, priority = 999)
 public class RenderEntityVariantMixin<T extends LivingEntity, M extends EntityModel<T>> {
     @Shadow protected M model;
-    @Unique
-    private static EntityRendererProvider.Context CONTEXT = null;
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    public void LivingEntityRenderer(EntityRendererProvider.Context context, EntityModel<?> model, float shadowRadius, CallbackInfo ci) {
-        CONTEXT = context;
-    }
+    @Unique
+    private final Map<String, EntityModel<?>> mixedLitter$cachedRemodels = new HashMap<>();
 
     @Inject(method = "getRenderType", at = @At(value = "HEAD"))
     public void storeRenderTypeVariables(T livingEntity, boolean bodyVisible, boolean translucent, boolean glowing, CallbackInfoReturnable<RenderType> cir) {
         if (Config.STARTUP_CONFIG.isLoaded()) {
-            String key = BuiltInRegistries.ENTITY_TYPE.getKey(livingEntity.getType()).toString();
+            String entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(livingEntity.getType()).toString();
 
-            if (livingEntity instanceof AgeableMob) {
-                if (Config.PIG_REMODEL.get() && livingEntity instanceof Saddleable && Config.PIGS.get().contains(key) && model instanceof PigModel) {
-                    model = (M) new PigRemodel<>(CONTEXT.bakeLayer(ModelLayers.PIG_LAYER));
+            if (!mixedLitter$cachedRemodels.containsKey(entityKey)) {
+                EntityModelSet modelSet = Minecraft.getInstance().getEntityModels();
+                EntityModel<?> newModel = null;
+
+                SetRemodel remodel = VariantUtil.findAction(livingEntity, SetRemodel.class);
+                if (remodel != null && remodel.getRemodel() != null) {
+                    Object m = RemodelRegistry.createModel(remodel.getRemodel(), entityKey, modelSet);
+                    if (m != null) newModel = (EntityModel<?>) m;
                 }
 
-                if (Config.CHICKEN_REMODEL.get() && Config.CHICKENS.get().contains(key) && model instanceof ChickenModel) {
-                    model = (M) new ChickenRemodel<>(CONTEXT.bakeLayer(ModelLayers.CHICKEN_LAYER));
+                if (newModel == null) {
+                    Object m = RemodelRegistry.createModelFromConfig(entityKey, modelSet);
+                    if (m != null) newModel = (EntityModel<?>) m;
                 }
 
-                if (Config.COW_REMODEL.get() && Config.COWS.get().contains(key) && model instanceof CowModel) {
-                    model = (M) new CowRemodel<>(CONTEXT.bakeLayer(ModelLayers.COW_LAYER));
-                }
+                mixedLitter$cachedRemodels.put(entityKey, newModel);
             }
 
-            if (Config.SHEEP_REMODEL.get() && livingEntity instanceof Sheep && Config.SHEEP.get().contains(key) && model instanceof SheepModel) {
-                model = (M) new SheepRemodel<>(CONTEXT.bakeLayer(ModelLayers.SHEEP_LAYER));
-            }
-
-            if (Config.SQUID_REMODEL.get() && Config.SQUIDS.get().contains(key) && model instanceof SquidModel) {
-                model = (M) new SquidRemodel<>(CONTEXT.bakeLayer(ModelLayers.SQUID_LAYER));
-            }
-
-            if (Config.RABBIT_REMODEL.get() && livingEntity instanceof Rabbit && Config.RABBITS.get().contains(key) && model instanceof RabbitModel) {
-                model = (M) new RabbitRemodel<>(CONTEXT.bakeLayer(ModelLayers.RABBIT_LAYER));
-            }
+            EntityModel<?> cached = mixedLitter$cachedRemodels.get(entityKey);
+            if (cached != null) model = (M) cached;
         }
     }
 
     @ModifyVariable(method = "getRenderType", at = @At(value = "STORE", target = "Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;getTextureLocation(Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/resources/ResourceLocation;"))
     public ResourceLocation getVariantTexture(ResourceLocation value, @Local(argsOnly = true) T livingEntity) {
         if (livingEntity != null) {
-            List<Variant> variants = VariantUtil.getVariants(livingEntity);
-
-            for (Variant variant : variants) {
-                VariantType variantType = VariantUtil.getType(livingEntity, variant);
-                for (Action action : variantType.actions()) {
-                    VariantActionType actionType = action.type();
-
-                    actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
-
-                    switch (actionType) {
-                        case SetTexture setTexture -> {
-                            return setTexture.texture;
-                        }
-                        case SetAgeableTexture setAgeableTexture -> {
-                            return livingEntity instanceof AgeableMob ageableMob && ageableMob.isBaby() ? setAgeableTexture.babyTexture : setAgeableTexture.texture;
-                        }
-                        case ReplaceTextures replaceTextures -> {
-                            for (Map.Entry<ResourceLocation, ResourceLocation> resourceLocationEntry : replaceTextures.replacements.entrySet()) {
-                                if (value.equals(resourceLocationEntry.getKey()))
-                                    return resourceLocationEntry.getValue();
-                            }
-                        }
-                        default -> {}
-                    }
-                }
-            }
+            return VariantUtil.resolveTexture(livingEntity, value);
         }
-
         return value;
     }
 }

@@ -14,8 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.StringJoiner;
 
 @Mixin(Bucketable.class)
 public interface BucketableMixin {
@@ -23,12 +22,11 @@ public interface BucketableMixin {
     private static void saveVariantDataToBucketTag(Mob mob, ItemStack bucket, CallbackInfo ci) {
         CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> {
             if (mob.hasData(MLDataAttachmentTypes.VARIANTS)) {
-                StringBuilder variants = new StringBuilder();
+                StringJoiner joiner = new StringJoiner(",");
                 for (ResourceLocation resourceLocation : mob.getData(MLDataAttachmentTypes.VARIANTS)) {
-                    variants.append(resourceLocation.toString()).append(", ");
+                    joiner.add(resourceLocation.toString());
                 }
-
-                tag.putString("Variants", variants.toString());
+                tag.putString("Variants", joiner.toString());
             }
         });
     }
@@ -37,8 +35,12 @@ public interface BucketableMixin {
     private static void loadVariantDataFromBucketTag(Mob mob, CompoundTag tag, CallbackInfo ci) {
         if (tag.contains("Variants")) {
             ArrayList<ResourceLocation> variants = new ArrayList<>();
-            for (String variant : Arrays.stream(tag.getString("Variants").split(", ")).toList()) {
-                Optional.ofNullable(ResourceLocation.tryParse(variant)).map(variants::add);
+            for (String variant : tag.getString("Variants").split(",")) {
+                String trimmed = variant.trim();
+                if (!trimmed.isEmpty()) {
+                    ResourceLocation rl = ResourceLocation.tryParse(trimmed);
+                    if (rl != null) variants.add(rl);
+                }
             }
 
             if (!variants.isEmpty()) mob.setData(MLDataAttachmentTypes.VARIANTS, variants);

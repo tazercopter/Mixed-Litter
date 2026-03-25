@@ -1,6 +1,11 @@
 package dev.tazer.mixed_litter;
 
 import com.google.gson.JsonElement;
+import dev.tazer.mixed_litter.actions.Action;
+import dev.tazer.mixed_litter.actions.ReplaceTextures;
+import dev.tazer.mixed_litter.actions.SetAgeableTexture;
+import dev.tazer.mixed_litter.actions.SetTexture;
+import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
@@ -11,10 +16,13 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 public class VariantUtil {
 
@@ -31,20 +39,43 @@ public class VariantUtil {
         return variantList;
     }
 
-    public static Variant selectVariant(VariantGroup group, List<Variant> groupVariants, RandomSource random) {
-        boolean spawningLocation = false;
-        for (Variant variant : groupVariants) {
-            if (variant.conditions().isPresent() && variant.conditions().get().spawningLocation().isPresent()) {
-                spawningLocation = true;
-                break;
+    public static <T extends VariantActionType> T findAction(Entity entity, Class<T> type) {
+        for (Variant variant : getVariants(entity)) {
+            VariantType variantType = getType(entity, variant);
+            if (variantType == null) continue;
+            for (Action action : variantType.actions()) {
+                if (type.isInstance(action.type())) {
+                    return type.cast(action.type().resolve(action.arguments(), variant.arguments(), variantType.defaults()));
+                }
             }
         }
+        return null;
+    }
 
-        if (spawningLocation)
-            groupVariants.removeIf(
-                variant -> variant.conditions().isEmpty() || variant.conditions().get().spawningLocation().isEmpty()
-            );
+    public static ResourceLocation resolveTexture(Entity entity, ResourceLocation defaultTexture) {
+        for (Variant variant : getVariants(entity)) {
+            VariantType variantType = getType(entity, variant);
+            if (variantType == null) continue;
+            for (Action action : variantType.actions()) {
+                VariantActionType resolved = action.type().resolve(action.arguments(), variant.arguments(), variantType.defaults());
 
+                if (resolved instanceof SetTexture setTexture) {
+                    return setTexture.getTexture();
+                }
+                if (resolved instanceof SetAgeableTexture sat) {
+                    return entity instanceof AgeableMob am && am.isBaby() ? sat.getBabyTexture() : sat.getTexture();
+                }
+                if (resolved instanceof ReplaceTextures rt && rt.getReplacements() != null) {
+                    for (Map.Entry<ResourceLocation, ResourceLocation> entry : rt.getReplacements().entrySet()) {
+                        if (defaultTexture.equals(entry.getKey())) return entry.getValue();
+                    }
+                }
+            }
+        }
+        return defaultTexture;
+    }
+
+    public static Variant selectVariant(VariantGroup group, List<Variant> groupVariants, RandomSource random) {
         return switch (group.selection()) {
             case UNIFORM -> groupVariants.get(random.nextInt(groupVariants.size()));
             case WEIGHTED -> {
@@ -65,66 +96,75 @@ public class VariantUtil {
         };
     }
 
-    public static void applySuitableVariants(Entity entity) {
-        ServerLevel serverLevel = (ServerLevel) entity.level();
-        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
-        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-        ArrayList<Variant> selectedVariants = new ArrayList<>();
-        boolean replaceDefault = false;
+    public static List<Variant> collectVariants(
+            Entity entity,
+            ServerLevel level,
+            ArrayList<Holder<Variant>> availableVariants,
+            Registry<VariantGroup> groupRegistry,
+            Predicate<Variant> filter,
+            BiFunction<VariantGroup, List<Variant>, Variant> selector,
+            boolean isSpawn
+    ) {
+        ArrayList<Variant> selected = new ArrayList<>();
 
-        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
-            VariantGroup group = variantGroupHolder.value();
-            if (group.replaceDefault()) replaceDefault = true;
-            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity)) continue;
+        for (Holder<VariantGroup> groupHolder : groupRegistry.holders().toList()) {
+            VariantGroup group = groupHolder.value();
+            if (group.conditions().isPresent()) {
+                boolean matches = isSpawn
+                        ? group.conditions().get().matchesSpawn(level, entity.position(), entity)
+                        : group.conditions().get().matchesPersistent(level, entity.position(), entity);
+                if (!matches) continue;
+            }
 
-            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
+            ArrayList<Variant> matching = new ArrayList<>();
             for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
                 Variant variant = variantHolder.value();
+                if (!filter.test(variant)) continue;
                 variant.group().ifPresent(location -> {
-                    if (variantGroupRegistry.get(location) == group) {
-                        if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
-                            matchingGroupVariants.add(variant);
+                    if (groupRegistry.get(location) == group) {
+                        boolean variantMatches = true;
+                        if (variant.conditions().isPresent()) {
+                            variantMatches = isSpawn
+                                    ? variant.conditions().get().matchesSpawn(level, entity.position(), entity)
+                                    : variant.conditions().get().matchesPersistent(level, entity.position(), entity);
                         }
+                        if (variantMatches) matching.add(variant);
                         availableVariants.remove(variantHolder);
                     }
                 });
             }
 
-            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
-                selectedVariants.add(selectVariant(group, matchingGroupVariants, entity.getRandom()));
+            if (!matching.isEmpty() && group.exclusive()) {
+                selected.add(selector.apply(group, matching));
             }
         }
 
         for (Holder<Variant> variantHolder : availableVariants) {
             Variant variant = variantHolder.value();
-            if (variant.group().isEmpty()) {
-                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
-                    selectedVariants.add(variant);
+            if (filter.test(variant) && variant.group().isEmpty()) {
+                boolean variantMatches = true;
+                if (variant.conditions().isPresent()) {
+                    variantMatches = isSpawn
+                            ? variant.conditions().get().matchesSpawn(level, entity.position(), entity)
+                            : variant.conditions().get().matchesPersistent(level, entity.position(), entity);
                 }
+                if (variantMatches) selected.add(variant);
             }
         }
 
-        if (replaceDefault) {
-            for (Variant variant : new ArrayList<>(selectedVariants)) {
-                variant.group().ifPresent(location -> {
-                    if (location.equals(MixedLitter.location("default"))) selectedVariants.remove(variant);
-                });
-            }
-        }
+        return selected;
+    }
 
-        if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()) {
-            selectedVariants.getFirst().group().ifPresent(location -> {
-                if (location.equals(MixedLitter.location("default"))) selectedVariants.remove(selectedVariants.getFirst());
-            });
-        }
-
+    public static void resolveConflicts(
+            List<Variant> variants,
+            Registry<VariantGroup> groupRegistry,
+            RandomSource random,
+            @Nullable Set<ResourceLocation> preferredGroups
+    ) {
         Map<ResourceLocation, List<Variant>> presentByGroup = new HashMap<>();
-        for (Variant variant : selectedVariants) {
-            if (variant.group().isPresent()) {
-                ResourceLocation groupId = variant.group().get();
-                presentByGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant);
-            }
+        for (Variant variant : variants) {
+            variant.group().ifPresent(groupId ->
+                    presentByGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant));
         }
 
         Set<ResourceLocation> unresolved = new HashSet<>(presentByGroup.keySet());
@@ -137,16 +177,16 @@ public class VariantUtil {
             while (!queue.isEmpty()) {
                 ResourceLocation current = queue.removeFirst();
                 if (!cluster.add(current)) continue;
-                VariantGroup currentGroup = variantGroupRegistry.get(current);
-                if (currentGroup != null && currentGroup.conflicts() != null) {
-                    for (ResourceLocation other : currentGroup.conflicts()) {
+                VariantGroup group = groupRegistry.get(current);
+                if (group != null && group.conflicts() != null) {
+                    for (ResourceLocation other : group.conflicts()) {
                         if (presentByGroup.containsKey(other) && !cluster.contains(other)) queue.addLast(other);
                     }
                 }
                 for (Map.Entry<ResourceLocation, List<Variant>> entry : presentByGroup.entrySet()) {
                     ResourceLocation candidate = entry.getKey();
                     if (candidate.equals(current)) continue;
-                    VariantGroup candidateGroup = variantGroupRegistry.get(candidate);
+                    VariantGroup candidateGroup = groupRegistry.get(candidate);
                     if (candidateGroup != null && candidateGroup.conflicts() != null && candidateGroup.conflicts().contains(current) && !cluster.contains(candidate)) {
                         queue.addLast(candidate);
                     }
@@ -155,24 +195,68 @@ public class VariantUtil {
 
             if (cluster.size() > 1) {
                 List<ResourceLocation> clusterList = new ArrayList<>(cluster);
-                ResourceLocation winningGroupId = clusterList.get(entity.getRandom().nextInt(clusterList.size()));
-                VariantGroup winningGroup = variantGroupRegistry.get(winningGroupId);
-                List<Variant> winningCandidates = presentByGroup.get(winningGroupId);
-                Variant winningVariant = selectVariant(winningGroup, winningCandidates, entity.getRandom());
+                ResourceLocation winningGroupId = null;
 
-                for (ResourceLocation gid : clusterList) {
-                    if (!gid.equals(winningGroupId)) {
-                        List<Variant> toRemove = presentByGroup.get(gid);
-                        if (toRemove != null) selectedVariants.removeAll(toRemove);
+                if (preferredGroups != null) {
+                    for (ResourceLocation gid : clusterList) {
+                        if (preferredGroups.contains(gid)) {
+                            winningGroupId = gid;
+                            break;
+                        }
                     }
                 }
+                if (winningGroupId == null) {
+                    winningGroupId = clusterList.get(random.nextInt(clusterList.size()));
+                }
+
+                VariantGroup winningGroup = groupRegistry.get(winningGroupId);
+                List<Variant> winningCandidates = presentByGroup.get(winningGroupId);
+                if (winningGroup == null || winningCandidates == null) {
+                    unresolved.removeAll(cluster);
+                    continue;
+                }
+                Variant winningVariant = selectVariant(winningGroup, new ArrayList<>(winningCandidates), random);
+
+                for (ResourceLocation gid : clusterList) {
+                    List<Variant> toRemove = presentByGroup.get(gid);
+                    if (toRemove != null) variants.removeAll(toRemove);
+                }
+                variants.add(winningVariant);
+
                 presentByGroup.put(winningGroupId, Collections.singletonList(winningVariant));
-                unresolved.removeAll(clusterList);
-                continue;
+                for (ResourceLocation gid : clusterList) {
+                    if (!gid.equals(winningGroupId)) presentByGroup.remove(gid);
+                }
             }
 
             unresolved.removeAll(cluster);
         }
+    }
+
+    public static void applySuitableVariants(Entity entity) {
+        ServerLevel serverLevel = (ServerLevel) entity.level();
+        Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
+        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
+        boolean replaceDefault = groupRegistry.holders().anyMatch(h -> h.value().replaceDefault());
+
+        List<Variant> selectedVariants = collectVariants(
+                entity, serverLevel, availableVariants, groupRegistry,
+                v -> true,
+                (group, variants) -> selectVariant(group, variants, entity.getRandom()),
+                true
+        );
+
+        if (replaceDefault) {
+            selectedVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.location("default")));
+        }
+
+        if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()
+                && selectedVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
+            selectedVariants.clear();
+        }
+
+        resolveConflicts(selectedVariants, groupRegistry, entity.getRandom(), null);
 
         if (!selectedVariants.isEmpty()) {
             setVariants(entity, selectedVariants);
@@ -189,49 +273,20 @@ public class VariantUtil {
     }
 
     public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {
-        List<Variant> AVariants = new ArrayList<>(getVariants(parentA));
-        List<Variant> BVariants = new ArrayList<>(getVariants(parentB));
+        List<Variant> aVariants = new ArrayList<>(getVariants(parentA));
+        List<Variant> bVariants = new ArrayList<>(getVariants(parentB));
 
         ServerLevel serverLevel = (ServerLevel) child.level();
-
-        Registry<VariantGroup> variantGroupRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<VariantGroup> groupRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
         Registry<Variant> variantRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-        ArrayList<Variant> childVariants = new ArrayList<>();
 
-        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
-            VariantGroup group = variantGroupHolder.value();
-
-            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, child.position(), child))
-                continue;
-
-            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
-            for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
-                Variant variant = variantHolder.value();
-
-                if (AVariants.contains(variant) || BVariants.contains(variant)) {
-                    variant.group().ifPresent(location -> {
-                        if (variantGroupRegistry.get(location) == group) {
-                            if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, child.position(), child))
-                                matchingGroupVariants.add(variant);
-                            availableVariants.remove(variantHolder);
-                        }
-                    });
-                }
-            }
-
-            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
-                childVariants.add(matchingGroupVariants.get(child.getRandom().nextInt(matchingGroupVariants.size())));
-            }
-        }
-
-        for (Holder<Variant> variantHolder : availableVariants) {
-            Variant variant = variantHolder.value();
-            if ((AVariants.contains(variant) || BVariants.contains(variant)) && variant.group().isEmpty()) {
-                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, child.position(), child))
-                    childVariants.add(variantHolder.value());
-            }
-        }
+        List<Variant> childVariants = collectVariants(
+                child, serverLevel, availableVariants, groupRegistry,
+                v -> aVariants.contains(v) || bVariants.contains(v),
+                (group, variants) -> variants.get(child.getRandom().nextInt(variants.size())),
+                false
+        );
 
         if (!childVariants.isEmpty()) {
             setVariants(child, childVariants);
@@ -241,16 +296,16 @@ public class VariantUtil {
     public static void validateVariants(Entity entity) {
         List<Variant> oldVariants = getVariants(entity);
         ArrayList<Variant> newVariants = new ArrayList<>(oldVariants);
-        Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ServerLevel serverLevel = (ServerLevel) entity.level();
 
         for (Variant variant : oldVariants) {
             if (variant.group().isPresent()) {
-                VariantGroup group = variantGroupRegistry.get(variant.group().get());
+                VariantGroup group = groupRegistry.get(variant.group().get());
                 if (group != null) {
                     if (group.conditions().isPresent()) {
-                        if (!group.conditions().get().matches(serverLevel, entity.position(), entity)) {
+                        if (!group.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
                             newVariants.remove(variant);
                             continue;
                         }
@@ -262,52 +317,26 @@ public class VariantUtil {
             }
 
             if (variant.conditions().isPresent()) {
-                if (!variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
+                if (!variant.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
                     newVariants.remove(variant);
                 }
             }
         }
 
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-        ArrayList<Variant> selectedVariants = new ArrayList<>();
-        boolean replaceDefault = false;
 
-        for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
-            VariantGroup group = variantGroupHolder.value();
-            if (group.replaceDefault()) replaceDefault = true;
-            if (group.conditions().isPresent() && !group.conditions().get().matches(serverLevel, entity.position(), entity)) continue;
-
-            ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
-            for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
-                Variant variant = variantHolder.value();
-                variant.group().ifPresent(location -> {
-                    if (variantGroupRegistry.get(location) == group) {
-                        if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
-                            matchingGroupVariants.add(variant);
-                        }
-                        availableVariants.remove(variantHolder);
-                    }
-                });
-            }
-
-            if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
-                selectedVariants.add(selectVariant(group, matchingGroupVariants, entity.getRandom()));
-            }
-        }
-
-        for (Holder<Variant> variantHolder : availableVariants) {
-            Variant variant = variantHolder.value();
-            if (variant.group().isEmpty()) {
-                if (variant.conditions().isEmpty() || variant.conditions().get().matches(serverLevel, entity.position(), entity)) {
-                    selectedVariants.add(variant);
-                }
-            }
-        }
+        List<Variant> selectedVariants = collectVariants(
+                entity, serverLevel, availableVariants, groupRegistry,
+                v -> true,
+                (group, variants) -> selectVariant(group, variants, entity.getRandom()),
+                false
+        );
 
         for (Variant selectedVariant : new ArrayList<>(selectedVariants)) {
             for (Variant newVariant : newVariants) {
                 if (selectedVariant == newVariant) selectedVariants.remove(selectedVariant);
-                if (newVariant.group().isPresent() && getGroup(entity, newVariant).exclusive() && selectedVariant.group().equals(newVariant.group())) {
+                VariantGroup newVariantGroup = newVariant.group().isPresent() ? getGroup(entity, newVariant) : null;
+                if (newVariantGroup != null && newVariantGroup.exclusive() && selectedVariant.group().equals(newVariant.group())) {
                     selectedVariants.remove(selectedVariant);
                 }
             }
@@ -315,16 +344,17 @@ public class VariantUtil {
 
         newVariants.addAll(selectedVariants);
 
+        boolean replaceDefault = groupRegistry.holders().anyMatch(h -> h.value().replaceDefault());
+
+        if (replaceDefault) {
+            newVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.location("default")));
+        }
+
         Map<ResourceLocation, List<Variant>> groupedVariants = new HashMap<>();
-        for (Variant variant : new ArrayList<>(newVariants)) {
-            if (replaceDefault) {
-                variant.group().ifPresent(location -> {
-                    if (location.equals(MixedLitter.location("default"))) newVariants.remove(variant);
-                });
-            }
+        for (Variant variant : newVariants) {
             if (variant.group().isPresent()) {
                 ResourceLocation groupId = variant.group().get();
-                VariantGroup group = variantGroupRegistry.get(groupId);
+                VariantGroup group = groupRegistry.get(groupId);
                 if (group != null && group.exclusive()) {
                     groupedVariants.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant);
                 }
@@ -334,7 +364,7 @@ public class VariantUtil {
         for (Map.Entry<ResourceLocation, List<Variant>> entry : groupedVariants.entrySet()) {
             List<Variant> groupVariants = entry.getValue();
             if (groupVariants.size() > 1) {
-                VariantGroup group = variantGroupRegistry.get(entry.getKey());
+                VariantGroup group = groupRegistry.get(entry.getKey());
                 if (group != null) {
                     Variant chosen = selectVariant(group, groupVariants, entity.getRandom());
                     newVariants.removeAll(groupVariants);
@@ -343,18 +373,9 @@ public class VariantUtil {
             }
         }
 
-        if (newVariants.size() == 1 && newVariants.getFirst().group().isPresent()) {
-            newVariants.getFirst().group().ifPresent(location -> {
-                if (location.equals(MixedLitter.location("default"))) newVariants.remove(newVariants.getFirst());
-            });
-        }
-
-        Map<ResourceLocation, List<Variant>> presentByGroup = new HashMap<>();
-        for (Variant variant : newVariants) {
-            if (variant.group().isPresent()) {
-                ResourceLocation groupId = variant.group().get();
-                presentByGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant);
-            }
+        if (newVariants.size() == 1 && newVariants.getFirst().group().isPresent()
+                && newVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
+            newVariants.clear();
         }
 
         Set<ResourceLocation> oldGroupIds = new HashSet<>();
@@ -362,67 +383,7 @@ public class VariantUtil {
             if (variant.group().isPresent()) oldGroupIds.add(variant.group().get());
         }
 
-        Set<ResourceLocation> unresolved = new HashSet<>(presentByGroup.keySet());
-        while (!unresolved.isEmpty()) {
-            ResourceLocation seed = unresolved.iterator().next();
-            Set<ResourceLocation> cluster = new HashSet<>();
-            Deque<ResourceLocation> queue = new ArrayDeque<>();
-            queue.add(seed);
-            while (!queue.isEmpty()) {
-                ResourceLocation gid = queue.removeFirst();
-                if (!cluster.add(gid)) continue;
-                VariantGroup group = variantGroupRegistry.get(gid);
-                if (group == null) continue;
-                List<ResourceLocation> conflicts = group.conflicts();
-                if (conflicts == null) continue;
-                for (ResourceLocation other : conflicts) {
-                    if (presentByGroup.containsKey(other) && !cluster.contains(other)) queue.addLast(other);
-                }
-                for (Map.Entry<ResourceLocation, List<Variant>> e : presentByGroup.entrySet()) {
-                    ResourceLocation candidate = e.getKey();
-                    if (candidate.equals(gid)) continue;
-                    VariantGroup cg = variantGroupRegistry.get(candidate);
-                    if (cg == null) continue;
-                    List<ResourceLocation> back = cg.conflicts();
-                    if (back != null && back.contains(gid) && !cluster.contains(candidate)) queue.addLast(candidate);
-                }
-            }
-
-            if (cluster.size() > 1) {
-                List<ResourceLocation> clusterList = new ArrayList<>(cluster);
-                ResourceLocation winningGroupId = null;
-                for (ResourceLocation gid : clusterList) {
-                    if (oldGroupIds.contains(gid)) {
-                        winningGroupId = gid;
-                        break;
-                    }
-                }
-                if (winningGroupId == null) {
-                    winningGroupId = clusterList.get(entity.getRandom().nextInt(clusterList.size()));
-                }
-
-                VariantGroup winningGroup = variantGroupRegistry.get(winningGroupId);
-                List<Variant> winningCandidates = presentByGroup.get(winningGroupId);
-                Variant winningVariant = selectVariant(winningGroup, winningCandidates, entity.getRandom());
-
-                for (ResourceLocation gid : clusterList) {
-                    List<Variant> toRemove = presentByGroup.get(gid);
-                    if (toRemove != null) newVariants.removeAll(toRemove);
-                }
-                newVariants.add(winningVariant);
-
-                Map<ResourceLocation, List<Variant>> updated = new HashMap<>(presentByGroup);
-                updated.put(winningGroupId, Collections.singletonList(winningVariant));
-                for (ResourceLocation gid : clusterList) {
-                    if (!gid.equals(winningGroupId)) updated.remove(gid);
-                }
-                presentByGroup = updated;
-                clusterList.forEach(unresolved::remove);
-                continue;
-            }
-
-            unresolved.removeAll(cluster);
-        }
+        resolveConflicts(newVariants, groupRegistry, entity.getRandom(), oldGroupIds);
 
         if (!newVariants.equals(oldVariants)) {
             setVariants(entity, newVariants);
@@ -435,7 +396,7 @@ public class VariantUtil {
         return variant.group().map(variantGroupRegistry::get).orElse(null);
     }
 
-    public static VariantType getType(Entity entity, Variant variant) {
+    public static @Nullable VariantType getType(Entity entity, Variant variant) {
         Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_TYPE_KEY);
 
         return variantTypeRegistry.get(variant.type());

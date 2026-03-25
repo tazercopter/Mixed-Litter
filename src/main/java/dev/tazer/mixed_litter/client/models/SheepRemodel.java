@@ -1,12 +1,12 @@
 package dev.tazer.mixed_litter.client.models;
 
-import net.minecraft.client.model.QuadrupedModel;
+import net.minecraft.client.model.SheepModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.animal.Sheep;
 
-public class SheepRemodel<T extends Sheep> extends QuadrupedModel<T> {
+public class SheepRemodel<T extends Sheep> extends SheepModel<T> {
     private float headXRot;
     private final ModelPart bodyAdult;
     private final ModelPart bodyWool;
@@ -23,7 +23,7 @@ public class SheepRemodel<T extends Sheep> extends QuadrupedModel<T> {
     private final ModelPart shearedTail;
 
     public SheepRemodel(ModelPart root) {
-        super(root, false, 8.0F, 4.0F, 2.0F, 2.0F, 24);
+        super(root);
 
         bodyAdult = body.getChild("body_adult");
         bodyWool = bodyAdult.getChild("body_wool");

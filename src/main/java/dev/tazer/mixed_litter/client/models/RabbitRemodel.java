@@ -3,14 +3,14 @@ package dev.tazer.mixed_litter.client.models;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.RabbitModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Rabbit;
 
-public class RabbitRemodel<T extends Rabbit> extends EntityModel<T> {
+public class RabbitRemodel<T extends Rabbit> extends RabbitModel<T> {
     private final ModelPart leftRearFoot;
     private final ModelPart rightRearFoot;
     private final ModelPart leftHaunch;
@@ -25,6 +25,7 @@ public class RabbitRemodel<T extends Rabbit> extends EntityModel<T> {
     private final ModelPart nose;
     private float jumpRotation;
     public RabbitRemodel(ModelPart root) {
+        super(root);
         leftRearFoot = root.getChild("left_hind_foot");
         rightRearFoot = root.getChild("right_hind_foot");
         leftHaunch = root.getChild("left_haunch");
@@ -99,16 +100,16 @@ public class RabbitRemodel<T extends Rabbit> extends EntityModel<T> {
     public void renderToBuffer(PoseStack poseStack, VertexConsumer buffer, int packedLight, int packedOverlay, int color) {
         if (young) {
             poseStack.pushPose();
-            poseStack.scale(0.5F, 0.5F, 0.5F);
-            poseStack.translate(0, 1.490625, 0);
+            poseStack.scale(0.6F, 0.6F, 0.6F);
+            poseStack.translate(0, 1.1171875, 0);
             ImmutableList.of(leftHaunch, rightHaunch, body, leftFrontLeg, rightFrontLeg, tail, head, leftEar, rightEar, nose).forEach((p_349849_) -> {
                 p_349849_.render(poseStack, buffer, packedLight, packedOverlay, color);
             });
             poseStack.popPose();
         } else {
             poseStack.pushPose();
-            poseStack.scale(0.75F, 0.75F, 0.75F);
-            poseStack.translate(0, 0.5, 0);
+            poseStack.scale(0.9F, 0.9F, 0.9F);
+            poseStack.translate(0, 0.1667, 0);
             ImmutableList.of(leftRearFoot, rightRearFoot, leftHaunch, rightHaunch, body, leftFrontLeg, rightFrontLeg, head, rightEar, leftEar, tail, nose, new ModelPart[0]).forEach((p_349861_) -> {
                 p_349861_.render(poseStack, buffer, packedLight, packedOverlay, color);
             });

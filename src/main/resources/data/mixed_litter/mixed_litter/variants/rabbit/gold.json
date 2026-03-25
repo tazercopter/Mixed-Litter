@@ -2,11 +2,14 @@
   "type": "mixed_litter:simple_texture",
   "group": "mixed_litter:remodeled_rabbits",
   "conditions": {
-    "spawning_location": {
-      "biomes": "#c:is_desert"
+    "spawn_predicate": {
+      "location": {
+        "biomes": "#c:is_desert"
+      }
     }
   },
   "arguments": {
-    "texture": "mixed_litter:entity/rabbit/rabbit_gold"
+    "texture": "mixed_litter:rabbit/rabbit_gold.png",
+    "remodel": "rabbit"
   }
 }

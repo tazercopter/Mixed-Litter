@@ -1,7 +1,5 @@
 package dev.tazer.mixed_litter;
 
-import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -23,7 +21,6 @@ public class Events {
         Entity entity = event.getEntity();
 
         if (!entity.level().isClientSide) {
-            entity.setData(MLDataAttachmentTypes.SPAWN_LOCATION, GlobalPos.of(entity.level().dimension(), entity.blockPosition()));
             applySuitableVariants(entity);
         }
     }

@@ -5,7 +5,6 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "mixed_litter.refmap.json",
   "mixins": [
-    "BeehiveOccupantMixin",
     "BucketableMixin",
     "MoobloomRendererMixin",
     "SpawnEggItemMixin",

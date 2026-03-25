@@ -8,26 +8,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReplaceTextures implements VariantActionType {
-    public Map<ResourceLocation, ResourceLocation> replacements;
+    private boolean resolved;
+    private Map<ResourceLocation, ResourceLocation> replacements;
+
+    public Map<ResourceLocation, ResourceLocation> getReplacements() { return resolved ? replacements : null; }
 
     @Override
-    public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+    public ReplaceTextures resolve(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+        ReplaceTextures result = new ReplaceTextures();
         JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);
-
-        JsonElement replacementsElement = arguments.get("replacements");
-        JsonObject replacementsObject = replacementsElement.getAsJsonObject();
-        Map<ResourceLocation, ResourceLocation> map = new HashMap<>();
+        JsonObject replacementsObject = arguments.get("replacements").getAsJsonObject();
+        result.replacements = new HashMap<>();
 
         for (Map.Entry<String, JsonElement> entry : replacementsObject.entrySet()) {
-            String fromKey = entry.getKey();
-            JsonElement toValueElement = entry.getValue();
-
-            ResourceLocation from = ResourceLocation.parse(fromKey).withPath(path -> "textures/" + path + ".png");
-            ResourceLocation to = ResourceLocation.parse(toValueElement.getAsString()).withPath(path -> "textures/" + path + ".png");
-
-            map.put(from, to);
+            ResourceLocation from = VariantActionType.resolveTexturePath(entry.getKey());
+            ResourceLocation to = VariantActionType.resolveTexturePath(entry.getValue().getAsString());
+            result.replacements.put(from, to);
         }
 
-        replacements = map;
+        result.resolved = true;
+        return result;
     }
 }

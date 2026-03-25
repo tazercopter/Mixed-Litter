@@ -1,4 +1,7 @@
 {
+  "defaults": {
+    "remodel": ""
+  },
   "actions": [
     {
       "type": "mixed_litter:set_ageable_texture",
@@ -13,6 +16,12 @@
         "texture": "fur_texture",
         "baby_texture": "baby_fur_texture",
         "sheared_texture": "sheared_fur_texture"
+      }
+    },
+    {
+      "type": "mixed_litter:set_remodel",
+      "arguments": {
+        "remodel": "remodel"
       }
     }
   ]

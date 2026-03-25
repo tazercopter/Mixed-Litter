@@ -2,7 +2,8 @@
   "type": "mixed_litter:ageable_texture",
   "group": "mixed_litter:remodeled_chicken",
   "arguments": {
-    "texture": "mixed_litter:entity/chicken/chicken",
-    "baby_texture": "mixed_litter:entity/chicken/chicken_baby"
+    "texture": "mixed_litter:chicken/chicken.png",
+    "baby_texture": "mixed_litter:chicken/chicken_baby.png",
+    "remodel": "chicken"
   }
 }

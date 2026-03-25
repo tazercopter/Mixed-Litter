@@ -1,14 +1,14 @@
 package dev.tazer.mixed_litter.client.models;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.model.AgeableListModel;
+import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.animal.Chicken;
 
-public class ChickenRemodel<T extends AgeableMob> extends AgeableListModel<T> {
+public class ChickenRemodel<T extends Chicken> extends ChickenModel<T> {
 
     private final ModelPart head;
     private final ModelPart body;
@@ -23,6 +23,7 @@ public class ChickenRemodel<T extends AgeableMob> extends AgeableListModel<T> {
     private final ModelPart leftLegBaby;
 
     public ChickenRemodel(ModelPart root) {
+        super(root);
         head = root.getChild("head");
         body = root.getChild("body");
         bodyAdult = body.getChild("body_adult");

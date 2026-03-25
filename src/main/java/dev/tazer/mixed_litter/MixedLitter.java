@@ -19,11 +19,6 @@ public class MixedLitter {
 
     // TODO variant holder interface injection
     // TODO better entity variant conditions
-    // TODO make texture arguments be under modid:entity/
-    // TODO fix variant validation -
-    //      make it so some variants specify if they require constant validation,
-    //      otherwise just apply new matching variants and remove unregistered groups
-    //      put registry validation in getVariants
     public MixedLitter(IEventBus modEventBus, ModContainer modContainer) {
 
         modEventBus.addListener(this::registerRegistries);

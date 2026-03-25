@@ -2,6 +2,7 @@
   "type": "mixed_litter:simple_texture",
   "group": "mixed_litter:remodeled_rabbits",
   "arguments": {
-    "texture": "mixed_litter:entity/rabbit/rabbit_black"
+    "texture": "mixed_litter:rabbit/rabbit_black.png",
+    "remodel": "rabbit"
   }
 }

@@ -2,15 +2,13 @@ package dev.tazer.mixed_litter.mixin.actions;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.tazer.mixed_litter.Config;
 import dev.tazer.mixed_litter.VariantUtil;
-import dev.tazer.mixed_litter.actions.Action;
+import dev.tazer.mixed_litter.actions.SetRemodel;
 import dev.tazer.mixed_litter.actions.SetSheepFurLayer;
-import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.client.ModelLayers;
+import dev.tazer.mixed_litter.client.RemodelRegistry;
 import dev.tazer.mixed_litter.client.models.SheepRemodel;
-import dev.tazer.mixed_litter.variants.Variant;
-import dev.tazer.mixed_litter.variants.VariantType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.SheepFurModel;
@@ -21,7 +19,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.SheepFurLayer;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,7 +37,7 @@ public abstract class SetSheepFurLayerMixin {
     @Shadow
     @Final
     private SheepFurModel<Sheep> model;
-    
+
     @Unique
     private SheepRemodel<Sheep> sheepRemodel;
 
@@ -51,32 +48,25 @@ public abstract class SetSheepFurLayerMixin {
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/animal/Sheep;FFFFFF)V", at = @At("HEAD"), cancellable = true)
     private void mixedLitter$render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Sheep sheep, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        EntityModel<Sheep> model = Config.SHEEP_REMODEL.get() && Config.SHEEP.get().contains(BuiltInRegistries.ENTITY_TYPE.getKey(sheep.getType()).toString()) ? sheepRemodel : this.model;
+        SetRemodel remodel = VariantUtil.findAction(sheep, SetRemodel.class);
+        String entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(sheep.getType()).toString();
+        EntityModel<Sheep> renderModel = (remodel != null && remodel.getRemodel() != null && RemodelRegistry.isEnabled(remodel.getRemodel(), entityKey)) ? sheepRemodel : this.model;
+
+        SetSheepFurLayer furData = VariantUtil.findAction(sheep, SetSheepFurLayer.class);
         ResourceLocation furTexture = null;
-
-        for (Variant variant : VariantUtil.getVariants(sheep)) {
-            VariantType variantType = VariantUtil.getType(sheep, variant);
-            for (Action action : variantType.actions()) {
-                VariantActionType actionType = action.type();
-
-                actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
-
-                if (actionType instanceof SetSheepFurLayer setSheepFurLayer) {
-                    furTexture = sheep.isBaby() ? setSheepFurLayer.babyTexture : sheep.isSheared() ? setSheepFurLayer.shearedTexture : setSheepFurLayer.texture;
-                    break;
-                }
-            }
+        if (furData != null) {
+            furTexture = sheep.isBaby() ? furData.getBabyTexture() : sheep.isSheared() ? furData.getShearedTexture() : furData.getTexture();
         }
 
         if (furTexture != null) {
             if (sheep.isInvisible()) {
                 Minecraft minecraft = Minecraft.getInstance();
                 if (minecraft.shouldEntityAppearGlowing(sheep)) {
-                    ((SheepFurLayer) (Object) this).getParentModel().copyPropertiesTo(model);
-                    model.prepareMobModel(sheep, limbSwing, limbSwingAmount, partialTicks);
-                    model.setupAnim(sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
+                    ((SheepFurLayer) (Object) this).getParentModel().copyPropertiesTo(renderModel);
+                    renderModel.prepareMobModel(sheep, limbSwing, limbSwingAmount, partialTicks);
+                    renderModel.setupAnim(sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
                     VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.outline(furTexture));
-                    model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(sheep, 0.0F), -16777216);
+                    renderModel.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(sheep, 0.0F), -16777216);
                 }
             } else {
                 int i;
@@ -91,7 +81,7 @@ public abstract class SetSheepFurLayerMixin {
                     i = FastColor.ARGB32.lerp(f, k1, l1);
                 } else i = Sheep.getColor(sheep.getColor());
 
-                mixedLitter$coloredCutoutModelCopyLayerRender(((SheepFurLayer) (Object) this).getParentModel(), model, furTexture, poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, i);
+                mixedLitter$coloredCutoutModelCopyLayerRender(((SheepFurLayer) (Object) this).getParentModel(), renderModel, furTexture, poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, partialTicks, i);
                 ci.cancel();
             }
         }

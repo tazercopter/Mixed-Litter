@@ -1,12 +1,12 @@
 package dev.tazer.mixed_litter.client.models;
 
-import net.minecraft.client.model.QuadrupedModel;
+import net.minecraft.client.model.CowModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.animal.Cow;
 
-public class CowRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
+public class CowRemodel<T extends Cow> extends CowModel<T> {
 
     private final ModelPart bodyAdult;
     private final ModelPart headBaby;
@@ -17,7 +17,7 @@ public class CowRemodel<T extends AgeableMob> extends QuadrupedModel<T> {
     private final ModelPart leftHindLegBaby;
 
     public CowRemodel(ModelPart root) {
-        super(root, false, 10.0F, 4.0F, 2.0F, 2.0F, 24);
+        super(root);
         bodyAdult = body.getChild("body_adult");
         headBaby = body.getChild("head_baby");
         bodyBaby = body.getChild("body_baby");

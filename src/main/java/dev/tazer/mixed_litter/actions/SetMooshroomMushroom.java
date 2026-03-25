@@ -6,12 +6,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 public class SetMooshroomMushroom implements VariantActionType {
-    public Block mushroom;
+    private boolean resolved;
+    private Block block;
+
+    public Block getBlock() { return resolved ? block : null; }
 
     @Override
-    public void initialize(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+    public SetMooshroomMushroom resolve(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs) {
+        SetMooshroomMushroom result = new SetMooshroomMushroom();
         JsonObject arguments = VariantActionType.resolveArguments(actionsArgs, variantArgs, defaultArgs);
-
-        mushroom = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(arguments.get("mushroom").getAsString()));
+        result.block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(arguments.get("mushroom").getAsString()));
+        result.resolved = true;
+        return result;
     }
 }

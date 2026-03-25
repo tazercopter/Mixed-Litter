@@ -1,6 +1,6 @@
 package dev.tazer.mixed_litter.client.models;
 
-import net.minecraft.client.model.QuadrupedModel;
+import net.minecraft.client.model.PigModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -8,10 +8,9 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.animal.Pig;
 
-public class PigRemodel<T extends AgeableMob & Saddleable> extends QuadrupedModel<T> {
+public class PigRemodel<T extends Pig> extends PigModel<T> {
 
     private final ModelPart headBaby;
     private final ModelPart rightFrontLegBaby;
@@ -22,7 +21,7 @@ public class PigRemodel<T extends AgeableMob & Saddleable> extends QuadrupedMode
     private final ModelPart leftEar;
 
     public PigRemodel(ModelPart root) {
-        super(root, false, 4.0F, 4.0F, 2.0F, 2.0F, 24);
+        super(root);
         headBaby = body.getChild("head_baby");
         rightFrontLegBaby = headBaby.getChild("right_front_leg_baby");
         leftFrontLegBaby = headBaby.getChild("left_front_leg_baby");

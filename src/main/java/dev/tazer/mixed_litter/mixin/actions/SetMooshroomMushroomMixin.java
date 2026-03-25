@@ -2,9 +2,7 @@ package dev.tazer.mixed_litter.mixin.actions;
 
 import dev.tazer.mixed_litter.MLRegistries;
 import dev.tazer.mixed_litter.VariantUtil;
-import dev.tazer.mixed_litter.actions.Action;
 import dev.tazer.mixed_litter.actions.SetMooshroomMushroom;
-import dev.tazer.mixed_litter.actions.VariantActionType;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
 import dev.tazer.mixed_litter.variants.VariantType;
@@ -20,7 +18,6 @@ import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.event.EventHooks;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static dev.tazer.mixed_litter.VariantUtil.selectVariant;
@@ -55,46 +53,19 @@ public abstract class SetMooshroomMushroomMixin {
             Registry<VariantGroup> variantGroupRegistry = self.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
             Registry<Variant> variantRegistry = self.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
             ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-            ArrayList<Variant> selectedVariants = new ArrayList<>();
 
             availableVariants.removeIf(variant -> {
                 VariantType variantType = VariantUtil.getType(self, variant.value());
-                return variantType.actions().stream().filter(
-                        action -> action.type() instanceof SetMooshroomMushroom
-                ).toList().isEmpty();
+                if (variantType == null) return true;
+                return variantType.actions().stream().noneMatch(action -> action.type() instanceof SetMooshroomMushroom);
             });
 
-            for (Holder<VariantGroup> variantGroupHolder : variantGroupRegistry.holders().toList()) {
-                VariantGroup group = variantGroupHolder.value();
-
-                if (group.conditions().isPresent() && !group.conditions().get().matches(level, self.position(), self))
-                    continue;
-
-                ArrayList<Variant> matchingGroupVariants = new ArrayList<>();
-                for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
-                    Variant variant = variantHolder.value();
-
-                    variant.group().ifPresent(location -> {
-                        if (variantGroupRegistry.get(location) == group) {
-                            if (variant.conditions().isEmpty() || variant.conditions().get().matches(level, self.position(), self))
-                                matchingGroupVariants.add(variant);
-                            availableVariants.remove(variantHolder);
-                        }
-                    });
-                }
-
-                if (!matchingGroupVariants.isEmpty() && group.exclusive()) {
-                    selectedVariants.add(selectVariant(group, matchingGroupVariants, self.getRandom()));
-                }
-            }
-
-            for (Holder<Variant> variantHolder : availableVariants) {
-                Variant variant = variantHolder.value();
-                if (variant.group().isEmpty()) {
-                    if (variant.conditions().isEmpty() || variant.conditions().get().matches(level, self.position(), self))
-                        selectedVariants.add(variant);
-                }
-            }
+            List<Variant> selectedVariants = VariantUtil.collectVariants(
+                    self, level, availableVariants, variantGroupRegistry,
+                    v -> true,
+                    (group, variants) -> selectVariant(group, variants, self.getRandom()),
+                    true
+            );
 
             if (!selectedVariants.isEmpty()) {
                 setVariants(self, selectedVariants);
@@ -106,44 +77,16 @@ public abstract class SetMooshroomMushroomMixin {
 
     @Redirect(method = "mobInteract", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/MushroomCow;getVariant()Lnet/minecraft/world/entity/animal/MushroomCow$MushroomType;"))
     private MushroomCow.MushroomType hasBrownMushroom(MushroomCow instance) {
-        Block mushroom = null;
-        for (Variant variant : VariantUtil.getVariants(self)) {
-            VariantType variantType = VariantUtil.getType(self, variant);
-            for (Action action : variantType.actions()) {
-                VariantActionType actionType = action.type();
-
-                actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
-
-                if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
-                    mushroom = setMooshroomMushroom.mushroom;
-                    break;
-                }
-            }
-        }
-
-        return mushroom == Blocks.BROWN_MUSHROOM ? MushroomCow.MushroomType.BROWN : MushroomCow.MushroomType.RED;
+        SetMooshroomMushroom mushroom = VariantUtil.findAction(self, SetMooshroomMushroom.class);
+        return mushroom != null && mushroom.getBlock() == Blocks.BROWN_MUSHROOM ? MushroomCow.MushroomType.BROWN : MushroomCow.MushroomType.RED;
     }
 
     @Inject(method = "shear", at = @At("HEAD"), cancellable = true)
     private void shear(SoundSource category, CallbackInfo ci) {
         if (self.level() instanceof ServerLevel serverLevel) {
-            Block mushroom = null;
+            SetMooshroomMushroom mushroom = VariantUtil.findAction(self, SetMooshroomMushroom.class);
 
-            for (Variant variant : VariantUtil.getVariants(self)) {
-                VariantType variantType = VariantUtil.getType(self, variant);
-                for (Action action : variantType.actions()) {
-                    VariantActionType actionType = action.type();
-
-                    actionType.initialize(action.arguments(), variant.arguments(), variantType.defaults());
-
-                    if (actionType instanceof SetMooshroomMushroom setMooshroomMushroom) {
-                        mushroom = setMooshroomMushroom.mushroom;
-                        break;
-                    }
-                }
-            }
-
-            if (mushroom != null) {
+            if (mushroom != null && mushroom.getBlock() != null) {
                 self.level().playSound(null, self, SoundEvents.MOOSHROOM_SHEAR, category, 1.0F, 1.0F);
                 if (!EventHooks.canLivingConvert(self, EntityType.COW, timer -> {})) {
                     return;
@@ -165,7 +108,7 @@ public abstract class SetMooshroomMushroomMixin {
                     self.level().addFreshEntity(cow);
 
                     for (int i = 0; i < self.getRandom().nextInt(3, 7); ++i) {
-                        ItemEntity item = self.spawnAtLocation(new ItemStack(mushroom), self.getBbHeight());
+                        ItemEntity item = self.spawnAtLocation(new ItemStack(mushroom.getBlock()), self.getBbHeight());
                         if (item != null) {
                             item.setNoPickUpDelay();
                         }
