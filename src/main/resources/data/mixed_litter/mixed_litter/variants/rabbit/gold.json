@@ -9,7 +9,6 @@
     }
   },
   "arguments": {
-    "texture": "mixed_litter:rabbit/rabbit_gold.png",
-    "remodel": "rabbit"
+    "texture": "mixed_litter:rabbit/rabbit_gold.png"
   }
 }

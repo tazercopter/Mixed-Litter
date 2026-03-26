@@ -1,6 +1,7 @@
 package dev.tazer.mixed_litter;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import dev.tazer.mixed_litter.actions.Action;
 import dev.tazer.mixed_litter.actions.ReplaceTextures;
 import dev.tazer.mixed_litter.actions.SetAgeableTexture;
@@ -43,9 +44,10 @@ public class VariantUtil {
         for (Variant variant : getVariants(entity)) {
             VariantType variantType = getType(entity, variant);
             if (variantType == null) continue;
+            JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
             for (Action action : variantType.actions()) {
                 if (type.isInstance(action.type())) {
-                    return type.cast(action.type().resolve(action.arguments(), variant.arguments(), variantType.defaults()));
+                    return type.cast(action.type().resolve(action.arguments(), variant.arguments(), defaults));
                 }
             }
         }
@@ -56,8 +58,9 @@ public class VariantUtil {
         for (Variant variant : getVariants(entity)) {
             VariantType variantType = getType(entity, variant);
             if (variantType == null) continue;
+            JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
             for (Action action : variantType.actions()) {
-                VariantActionType resolved = action.type().resolve(action.arguments(), variant.arguments(), variantType.defaults());
+                VariantActionType resolved = action.type().resolve(action.arguments(), variant.arguments(), defaults);
 
                 if (resolved instanceof SetTexture setTexture) {
                     return setTexture.getTexture();
@@ -238,7 +241,6 @@ public class VariantUtil {
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-        boolean replaceDefault = groupRegistry.holders().anyMatch(h -> h.value().replaceDefault());
 
         List<Variant> selectedVariants = collectVariants(
                 entity, serverLevel, availableVariants, groupRegistry,
@@ -247,16 +249,19 @@ public class VariantUtil {
                 true
         );
 
+        boolean replaceDefault = selectedVariants.stream().anyMatch(v ->
+                v.group().isPresent() && groupRegistry.get(v.group().get()) != null && groupRegistry.get(v.group().get()).replaceDefault());
+
         if (replaceDefault) {
             selectedVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.location("default")));
         }
+
+        resolveConflicts(selectedVariants, groupRegistry, entity.getRandom(), null);
 
         if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()
                 && selectedVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
             selectedVariants.clear();
         }
-
-        resolveConflicts(selectedVariants, groupRegistry, entity.getRandom(), null);
 
         if (!selectedVariants.isEmpty()) {
             setVariants(entity, selectedVariants);
@@ -295,95 +300,29 @@ public class VariantUtil {
 
     public static void validateVariants(Entity entity) {
         List<Variant> oldVariants = getVariants(entity);
+        if (oldVariants.isEmpty()) return;
+
         ArrayList<Variant> newVariants = new ArrayList<>(oldVariants);
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         ServerLevel serverLevel = (ServerLevel) entity.level();
 
         for (Variant variant : oldVariants) {
             if (variant.group().isPresent()) {
                 VariantGroup group = groupRegistry.get(variant.group().get());
-                if (group != null) {
-                    if (group.conditions().isPresent()) {
-                        if (!group.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
-                            newVariants.remove(variant);
-                            continue;
-                        }
-                    }
-                } else {
+                if (group == null) {
+                    newVariants.remove(variant);
+                    continue;
+                }
+                if (group.conditions().isPresent() && !group.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
                     newVariants.remove(variant);
                     continue;
                 }
             }
 
-            if (variant.conditions().isPresent()) {
-                if (!variant.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
-                    newVariants.remove(variant);
-                }
+            if (variant.conditions().isPresent() && !variant.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
+                newVariants.remove(variant);
             }
         }
-
-        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-
-        List<Variant> selectedVariants = collectVariants(
-                entity, serverLevel, availableVariants, groupRegistry,
-                v -> true,
-                (group, variants) -> selectVariant(group, variants, entity.getRandom()),
-                false
-        );
-
-        for (Variant selectedVariant : new ArrayList<>(selectedVariants)) {
-            for (Variant newVariant : newVariants) {
-                if (selectedVariant == newVariant) selectedVariants.remove(selectedVariant);
-                VariantGroup newVariantGroup = newVariant.group().isPresent() ? getGroup(entity, newVariant) : null;
-                if (newVariantGroup != null && newVariantGroup.exclusive() && selectedVariant.group().equals(newVariant.group())) {
-                    selectedVariants.remove(selectedVariant);
-                }
-            }
-        }
-
-        newVariants.addAll(selectedVariants);
-
-        boolean replaceDefault = groupRegistry.holders().anyMatch(h -> h.value().replaceDefault());
-
-        if (replaceDefault) {
-            newVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.location("default")));
-        }
-
-        Map<ResourceLocation, List<Variant>> groupedVariants = new HashMap<>();
-        for (Variant variant : newVariants) {
-            if (variant.group().isPresent()) {
-                ResourceLocation groupId = variant.group().get();
-                VariantGroup group = groupRegistry.get(groupId);
-                if (group != null && group.exclusive()) {
-                    groupedVariants.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant);
-                }
-            }
-        }
-
-        for (Map.Entry<ResourceLocation, List<Variant>> entry : groupedVariants.entrySet()) {
-            List<Variant> groupVariants = entry.getValue();
-            if (groupVariants.size() > 1) {
-                VariantGroup group = groupRegistry.get(entry.getKey());
-                if (group != null) {
-                    Variant chosen = selectVariant(group, groupVariants, entity.getRandom());
-                    newVariants.removeAll(groupVariants);
-                    newVariants.add(chosen);
-                }
-            }
-        }
-
-        if (newVariants.size() == 1 && newVariants.getFirst().group().isPresent()
-                && newVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
-            newVariants.clear();
-        }
-
-        Set<ResourceLocation> oldGroupIds = new HashSet<>();
-        for (Variant variant : oldVariants) {
-            if (variant.group().isPresent()) oldGroupIds.add(variant.group().get());
-        }
-
-        resolveConflicts(newVariants, groupRegistry, entity.getRandom(), oldGroupIds);
 
         if (!newVariants.equals(oldVariants)) {
             setVariants(entity, newVariants);
@@ -392,13 +331,22 @@ public class VariantUtil {
 
     public static @Nullable VariantGroup getGroup(Entity entity, Variant variant) {
         Registry<VariantGroup> variantGroupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
-
         return variant.group().map(variantGroupRegistry::get).orElse(null);
     }
 
     public static @Nullable VariantType getType(Entity entity, Variant variant) {
         Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_TYPE_KEY);
-
         return variantTypeRegistry.get(variant.type());
+    }
+
+    private static JsonObject getEffectiveDefaults(Entity entity, Variant variant, VariantType variantType) {
+        JsonObject defaults = variantType.defaults().deepCopy();
+        VariantGroup group = getGroup(entity, variant);
+        if (group != null) {
+            for (Map.Entry<String, JsonElement> entry : group.defaults().entrySet()) {
+                defaults.add(entry.getKey(), entry.getValue());
+            }
+        }
+        return defaults;
     }
 }

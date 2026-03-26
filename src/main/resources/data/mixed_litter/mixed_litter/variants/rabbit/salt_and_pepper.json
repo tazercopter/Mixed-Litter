@@ -3,7 +3,6 @@
   "group": "mixed_litter:remodeled_rabbits",
   "arguments": {
     "weight": 5,
-    "texture": "mixed_litter:rabbit/rabbit_salt_and_pepper.png",
-    "remodel": "rabbit"
+    "texture": "mixed_litter:rabbit/rabbit_salt_and_pepper.png"
   }
 }

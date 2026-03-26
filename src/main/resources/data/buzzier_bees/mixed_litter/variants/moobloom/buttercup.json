@@ -9,7 +9,6 @@
   "group": "buzzier_bees:remodeled_mooblooms",
   "arguments": {
     "texture": "mixed_litter:moobloom/moobloom.png",
-    "baby_texture": "mixed_litter:moobloom/moobloom_baby.png",
-    "remodel": "cow"
+    "baby_texture": "mixed_litter:moobloom/moobloom_baby.png"
   }
 }

@@ -27,7 +27,7 @@ public class Events {
 
     @SubscribeEvent
     public static void onEntityLoaded(EntityJoinLevelEvent event) {
-        if (event.getLevel() instanceof ServerLevel serverLevel) {
+        if (event.getLevel() instanceof ServerLevel) {
             validateVariants(event.getEntity());
         }
     }
@@ -43,6 +43,6 @@ public class Events {
 
     @SubscribeEvent
     public static void updateVariant(EntityTickEvent.Pre event) {
-        if (!event.getEntity().level().isClientSide && event.getEntity().tickCount % 20 == 0) validateVariants(event.getEntity());
+        if (!event.getEntity().level().isClientSide && event.getEntity().tickCount % 200 == 0) validateVariants(event.getEntity());
     }
 }

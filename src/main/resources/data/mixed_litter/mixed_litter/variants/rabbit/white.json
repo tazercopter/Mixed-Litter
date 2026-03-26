@@ -10,7 +10,6 @@
   },
   "arguments": {
     "weight": 4,
-    "texture": "mixed_litter:rabbit/rabbit_albino.png",
-    "remodel": "rabbit"
+    "texture": "mixed_litter:rabbit/rabbit_albino.png"
   }
 }
