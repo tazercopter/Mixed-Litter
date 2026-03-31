@@ -2,7 +2,7 @@
   "type": "mixed_litter:ageable_texture",
   "group": "mixed_litter:remodeled_pigs",
   "arguments": {
-    "texture": "mixed_litter:pig/pig.png",
-    "baby_texture": "mixed_litter:pig/pig_baby.png"
+    "texture": "mixed_litter:pig/pig",
+    "baby_texture": "mixed_litter:pig/pig_baby"
   }
 }

@@ -8,7 +8,7 @@
   "type": "mixed_litter:ageable_texture",
   "group": "buzzier_bees:remodeled_mooblooms",
   "arguments": {
-    "texture": "mixed_litter:moobloom/moobloom.png",
-    "baby_texture": "mixed_litter:moobloom/moobloom_baby.png"
+    "texture": "mixed_litter:moobloom/moobloom",
+    "baby_texture": "mixed_litter:moobloom/moobloom_baby"
   }
 }

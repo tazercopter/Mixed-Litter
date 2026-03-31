@@ -13,7 +13,7 @@ public interface VariantActionType {
     VariantActionType resolve(JsonObject actionsArgs, JsonObject variantArgs, JsonObject defaultArgs);
 
     static ResourceLocation resolveTexturePath(String input) {
-        return ResourceLocation.parse(input).withPath(path -> "textures/entity/" + path);
+        return ResourceLocation.parse(input).withPath(path -> "textures/entity/" + path + ".png");
     }
 
     static JsonObject resolveArguments(JsonElement actionArgs, JsonObject variantArgs, JsonObject defaultArgs) {
