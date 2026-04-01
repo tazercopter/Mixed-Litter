@@ -43,6 +43,6 @@ public class Events {
 
     @SubscribeEvent
     public static void updateVariant(EntityTickEvent.Pre event) {
-        if (!event.getEntity().level().isClientSide && event.getEntity().tickCount % 200 == 0) validateVariants(event.getEntity());
+        if (!event.getEntity().level().isClientSide && event.getEntity().tickCount % 40 == 0) validateVariants(event.getEntity());
     }
 }

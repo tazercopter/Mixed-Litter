@@ -22,7 +22,6 @@ import net.minecraft.world.entity.Entity;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 public class VariantUtil {
@@ -99,13 +98,42 @@ public class VariantUtil {
         };
     }
 
+    public static Variant weightedSelect(List<Variant> variants, RandomSource random) {
+        Variant chosen = null;
+        int cumulative = 0;
+        for (Variant variant : variants) {
+            int weight = Optional.ofNullable(variant.arguments().get("weight"))
+                    .map(JsonElement::getAsInt).orElse(1);
+            if (random.nextInt(cumulative + weight) < weight)
+                chosen = variant;
+            cumulative += weight;
+        }
+        return chosen;
+    }
+
+    public static void applyExclusivity(List<Variant> variants, Registry<VariantGroup> groupRegistry, RandomSource random) {
+        Map<ResourceLocation, List<Variant>> byGroup = new LinkedHashMap<>();
+        for (Variant variant : variants) {
+            variant.group().ifPresent(groupId ->
+                    byGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant));
+        }
+
+        for (Map.Entry<ResourceLocation, List<Variant>> entry : byGroup.entrySet()) {
+            VariantGroup group = groupRegistry.get(entry.getKey());
+            if (group != null && group.exclusive() && entry.getValue().size() > 1) {
+                Variant selected = selectVariant(group, entry.getValue(), random);
+                variants.removeAll(entry.getValue());
+                variants.add(selected);
+            }
+        }
+    }
+
     public static List<Variant> collectVariants(
             Entity entity,
             ServerLevel level,
             ArrayList<Holder<Variant>> availableVariants,
             Registry<VariantGroup> groupRegistry,
             Predicate<Variant> filter,
-            BiFunction<VariantGroup, List<Variant>, Variant> selector,
             boolean isSpawn
     ) {
         ArrayList<Variant> selected = new ArrayList<>();
@@ -137,11 +165,16 @@ public class VariantUtil {
                 });
             }
 
-            if (!matching.isEmpty() && group.exclusive()) {
-                selected.add(selector.apply(group, matching));
+            if (matching.stream().anyMatch(v -> v.conditions().isPresent())) {
+                matching.removeIf(v -> v.conditions().isEmpty());
+            }
+
+            if (!matching.isEmpty()) {
+                selected.addAll(matching);
             }
         }
 
+        ArrayList<Variant> groupless = new ArrayList<>();
         for (Holder<Variant> variantHolder : availableVariants) {
             Variant variant = variantHolder.value();
             if (filter.test(variant) && variant.group().isEmpty()) {
@@ -151,9 +184,13 @@ public class VariantUtil {
                             ? variant.conditions().get().matchesSpawn(level, entity.position(), entity)
                             : variant.conditions().get().matchesPersistent(level, entity.position(), entity);
                 }
-                if (variantMatches) selected.add(variant);
+                if (variantMatches) groupless.add(variant);
             }
         }
+        if (groupless.stream().anyMatch(v -> v.conditions().isPresent())) {
+            groupless.removeIf(v -> v.conditions().isEmpty());
+        }
+        selected.addAll(groupless);
 
         return selected;
     }
@@ -197,37 +234,44 @@ public class VariantUtil {
             }
 
             if (cluster.size() > 1) {
-                List<ResourceLocation> clusterList = new ArrayList<>(cluster);
-                ResourceLocation winningGroupId = null;
+                List<Variant> pool = new ArrayList<>();
+                for (ResourceLocation gid : cluster) {
+                    List<Variant> groupVariants = presentByGroup.get(gid);
+                    if (groupVariants != null) pool.addAll(groupVariants);
+                }
 
+                List<Variant> selectionPool = pool;
                 if (preferredGroups != null) {
-                    for (ResourceLocation gid : clusterList) {
-                        if (preferredGroups.contains(gid)) {
-                            winningGroupId = gid;
-                            break;
-                        }
-                    }
-                }
-                if (winningGroupId == null) {
-                    winningGroupId = clusterList.get(random.nextInt(clusterList.size()));
+                    List<Variant> preferred = pool.stream()
+                            .filter(v -> v.group().isPresent() && preferredGroups.contains(v.group().get()))
+                            .toList();
+                    if (!preferred.isEmpty()) selectionPool = preferred;
                 }
 
-                VariantGroup winningGroup = groupRegistry.get(winningGroupId);
-                List<Variant> winningCandidates = presentByGroup.get(winningGroupId);
-                if (winningGroup == null || winningCandidates == null) {
+                Variant winningVariant = weightedSelect(selectionPool, random);
+                if (winningVariant == null) {
                     unresolved.removeAll(cluster);
                     continue;
                 }
-                Variant winningVariant = selectVariant(winningGroup, new ArrayList<>(winningCandidates), random);
 
-                for (ResourceLocation gid : clusterList) {
+                ResourceLocation winningGroupId = winningVariant.group().orElse(null);
+                VariantGroup winningGroup = winningGroupId != null ? groupRegistry.get(winningGroupId) : null;
+
+                for (ResourceLocation gid : cluster) {
                     List<Variant> toRemove = presentByGroup.get(gid);
                     if (toRemove != null) variants.removeAll(toRemove);
                 }
-                variants.add(winningVariant);
 
-                presentByGroup.put(winningGroupId, Collections.singletonList(winningVariant));
-                for (ResourceLocation gid : clusterList) {
+                if (winningGroup != null && !winningGroup.exclusive()) {
+                    List<Variant> winningGroupVariants = presentByGroup.get(winningGroupId);
+                    if (winningGroupVariants != null) variants.addAll(winningGroupVariants);
+                    presentByGroup.put(winningGroupId, winningGroupVariants);
+                } else {
+                    variants.add(winningVariant);
+                    if (winningGroupId != null) presentByGroup.put(winningGroupId, Collections.singletonList(winningVariant));
+                }
+
+                for (ResourceLocation gid : cluster) {
                     if (!gid.equals(winningGroupId)) presentByGroup.remove(gid);
                 }
             }
@@ -245,7 +289,6 @@ public class VariantUtil {
         List<Variant> selectedVariants = collectVariants(
                 entity, serverLevel, availableVariants, groupRegistry,
                 v -> true,
-                (group, variants) -> selectVariant(group, variants, entity.getRandom()),
                 true
         );
 
@@ -257,6 +300,7 @@ public class VariantUtil {
         }
 
         resolveConflicts(selectedVariants, groupRegistry, entity.getRandom(), null);
+        applyExclusivity(selectedVariants, groupRegistry, entity.getRandom());
 
         if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()
                 && selectedVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
@@ -289,9 +333,22 @@ public class VariantUtil {
         List<Variant> childVariants = collectVariants(
                 child, serverLevel, availableVariants, groupRegistry,
                 v -> aVariants.contains(v) || bVariants.contains(v),
-                (group, variants) -> variants.get(child.getRandom().nextInt(variants.size())),
                 false
         );
+
+        Map<ResourceLocation, List<Variant>> byGroup = new LinkedHashMap<>();
+        for (Variant variant : childVariants) {
+            variant.group().ifPresent(groupId ->
+                    byGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant));
+        }
+        for (Map.Entry<ResourceLocation, List<Variant>> entry : byGroup.entrySet()) {
+            VariantGroup group = groupRegistry.get(entry.getKey());
+            if (group != null && group.exclusive() && entry.getValue().size() > 1) {
+                Variant picked = entry.getValue().get(child.getRandom().nextInt(entry.getValue().size()));
+                childVariants.removeAll(entry.getValue());
+                childVariants.add(picked);
+            }
+        }
 
         if (!childVariants.isEmpty()) {
             setVariants(child, childVariants);

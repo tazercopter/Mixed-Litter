@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static dev.tazer.mixed_litter.VariantUtil.selectVariant;
 import static dev.tazer.mixed_litter.VariantUtil.setVariants;
 
 @Mixin(MushroomCow.class)
@@ -63,9 +62,10 @@ public abstract class SetMooshroomMushroomMixin {
             List<Variant> selectedVariants = VariantUtil.collectVariants(
                     self, level, availableVariants, variantGroupRegistry,
                     v -> true,
-                    (group, variants) -> selectVariant(group, variants, self.getRandom()),
                     true
             );
+
+            VariantUtil.applyExclusivity(selectedVariants, variantGroupRegistry, self.getRandom());
 
             if (!selectedVariants.isEmpty()) {
                 setVariants(self, selectedVariants);
