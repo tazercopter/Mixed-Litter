@@ -1,0 +1,18 @@
+{
+  "defaults": {
+  },
+  "actions": [
+    {
+      "type": "mixed_litter:set_texture",
+      "arguments": {
+        "texture": "texture"
+      }
+    },
+    {
+      "type": "mixed_litter:set_slime_outer_layer",
+      "arguments": {
+        "texture": "outer_texture"
+      }
+    }
+  ]
+}

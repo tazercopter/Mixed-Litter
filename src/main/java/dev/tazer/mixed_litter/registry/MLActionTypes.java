@@ -15,6 +15,7 @@ public class MLActionTypes {
     public static final Supplier<SetAgeableTexture> SET_AGEABLE_TEXTURE = register("set_ageable_texture", SetAgeableTexture::new);
     public static final Supplier<SetSheepFurLayer> SET_SHEEP_FUR_LAYER = register("set_sheep_fur_layer", SetSheepFurLayer::new);
     public static final Supplier<SetMooshroomMushroom> SET_MOOSHROOM_MUSHROOM = register("set_mooshroom_mushroom", SetMooshroomMushroom::new);
+    public static final Supplier<SetSlimeOuterLayer> SET_SLIME_OUTER_LAYER = register("set_slime_outer_layer", SetSlimeOuterLayer::new);
     public static final Supplier<SetRemodel> SET_REMODEL = register("set_remodel", SetRemodel::new);
 
     public static <T extends VariantActionType> Supplier<T> register(String name, Supplier<T> actionType) {

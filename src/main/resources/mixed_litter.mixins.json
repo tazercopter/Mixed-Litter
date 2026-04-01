@@ -8,12 +8,14 @@
     "BucketableMixin",
     "MoobloomRendererMixin",
     "SpawnEggItemMixin",
+    "SlimeMixin",
     "actions.SetMooshroomMushroomMixin"
   ],
   "client": [
     "MushroomCowRendererMixin",
     "RenderEntityVariantMixin",
-    "actions.SetSheepFurLayerMixin"
+    "actions.SetSheepFurLayerMixin",
+    "actions.SetSlimeOuterLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
