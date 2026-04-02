@@ -240,6 +240,10 @@ public class VariantUtil {
                     if (groupVariants != null) pool.addAll(groupVariants);
                 }
 
+                if (pool.stream().anyMatch(v -> v.conditions().isPresent())) {
+                    pool.removeIf(v -> v.conditions().isEmpty());
+                }
+
                 List<Variant> selectionPool = pool;
                 if (preferredGroups != null) {
                     List<Variant> preferred = pool.stream()
