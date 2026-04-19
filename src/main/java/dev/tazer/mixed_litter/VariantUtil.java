@@ -2,11 +2,7 @@ package dev.tazer.mixed_litter;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import dev.tazer.mixed_litter.actions.Action;
-import dev.tazer.mixed_litter.actions.ReplaceTextures;
-import dev.tazer.mixed_litter.actions.SetAgeableTexture;
-import dev.tazer.mixed_litter.actions.SetTexture;
-import dev.tazer.mixed_litter.actions.VariantActionType;
+import dev.tazer.mixed_litter.actions.*;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
@@ -133,19 +129,13 @@ public class VariantUtil {
             ServerLevel level,
             ArrayList<Holder<Variant>> availableVariants,
             Registry<VariantGroup> groupRegistry,
-            Predicate<Variant> filter,
-            boolean isSpawn
+            Predicate<Variant> filter
     ) {
         ArrayList<Variant> selected = new ArrayList<>();
 
         for (Holder<VariantGroup> groupHolder : groupRegistry.holders().toList()) {
             VariantGroup group = groupHolder.value();
-            if (group.conditions().isPresent()) {
-                boolean matches = isSpawn
-                        ? group.conditions().get().matchesSpawn(level, entity.position(), entity)
-                        : group.conditions().get().matchesPersistent(level, entity.position(), entity);
-                if (!matches) continue;
-            }
+            if (group.conditions().isPresent() && !group.conditions().get().matches(level, entity.position(), entity)) continue;
 
             ArrayList<Variant> matching = new ArrayList<>();
             for (Holder<Variant> variantHolder : new ArrayList<>(availableVariants)) {
@@ -153,46 +143,37 @@ public class VariantUtil {
                 if (!filter.test(variant)) continue;
                 variant.group().ifPresent(location -> {
                     if (groupRegistry.get(location) == group) {
-                        boolean variantMatches = true;
-                        if (variant.conditions().isPresent()) {
-                            variantMatches = isSpawn
-                                    ? variant.conditions().get().matchesSpawn(level, entity.position(), entity)
-                                    : variant.conditions().get().matchesPersistent(level, entity.position(), entity);
-                        }
+                        boolean variantMatches = variant.conditions().isEmpty()
+                                || variant.conditions().get().matches(level, entity.position(), entity);
                         if (variantMatches) matching.add(variant);
                         availableVariants.remove(variantHolder);
                     }
                 });
             }
 
-            if (matching.stream().anyMatch(v -> v.conditions().isPresent())) {
-                matching.removeIf(v -> v.conditions().isEmpty());
-            }
-
-            if (!matching.isEmpty()) {
-                selected.addAll(matching);
-            }
+            preferConditioned(matching);
+            if (!matching.isEmpty()) selected.addAll(matching);
         }
 
         ArrayList<Variant> groupless = new ArrayList<>();
         for (Holder<Variant> variantHolder : availableVariants) {
             Variant variant = variantHolder.value();
             if (filter.test(variant) && variant.group().isEmpty()) {
-                boolean variantMatches = true;
-                if (variant.conditions().isPresent()) {
-                    variantMatches = isSpawn
-                            ? variant.conditions().get().matchesSpawn(level, entity.position(), entity)
-                            : variant.conditions().get().matchesPersistent(level, entity.position(), entity);
-                }
+                boolean variantMatches = variant.conditions().isEmpty()
+                        || variant.conditions().get().matches(level, entity.position(), entity);
                 if (variantMatches) groupless.add(variant);
             }
         }
-        if (groupless.stream().anyMatch(v -> v.conditions().isPresent())) {
-            groupless.removeIf(v -> v.conditions().isEmpty());
-        }
+        preferConditioned(groupless);
         selected.addAll(groupless);
 
         return selected;
+    }
+
+    private static void preferConditioned(List<Variant> variants) {
+        if (variants.stream().anyMatch(v -> v.conditions().isPresent())) {
+            variants.removeIf(v -> v.conditions().isEmpty());
+        }
     }
 
     public static void resolveConflicts(
@@ -240,9 +221,7 @@ public class VariantUtil {
                     if (groupVariants != null) pool.addAll(groupVariants);
                 }
 
-                if (pool.stream().anyMatch(v -> v.conditions().isPresent())) {
-                    pool.removeIf(v -> v.conditions().isEmpty());
-                }
+                preferConditioned(pool);
 
                 List<Variant> selectionPool = pool;
                 if (preferredGroups != null) {
@@ -292,22 +271,21 @@ public class VariantUtil {
 
         List<Variant> selectedVariants = collectVariants(
                 entity, serverLevel, availableVariants, groupRegistry,
-                v -> true,
-                true
+                v -> true
         );
 
         boolean replaceDefault = selectedVariants.stream().anyMatch(v ->
                 v.group().isPresent() && groupRegistry.get(v.group().get()) != null && groupRegistry.get(v.group().get()).replaceDefault());
 
         if (replaceDefault) {
-            selectedVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.location("default")));
+            selectedVariants.removeIf(v -> v.group().isPresent() && v.group().get().equals(MixedLitter.DEFAULT_GROUP));
         }
 
         resolveConflicts(selectedVariants, groupRegistry, entity.getRandom(), null);
         applyExclusivity(selectedVariants, groupRegistry, entity.getRandom());
 
         if (selectedVariants.size() == 1 && selectedVariants.getFirst().group().isPresent()
-                && selectedVariants.getFirst().group().get().equals(MixedLitter.location("default"))) {
+                && selectedVariants.getFirst().group().get().equals(MixedLitter.DEFAULT_GROUP)) {
             selectedVariants.clear();
         }
 
@@ -326,24 +304,17 @@ public class VariantUtil {
     }
 
     public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {
-        List<Variant> aVariants = new ArrayList<>(getVariants(parentA));
-        List<Variant> bVariants = new ArrayList<>(getVariants(parentB));
+        LinkedHashSet<Variant> union = new LinkedHashSet<>();
+        union.addAll(getVariants(parentA));
+        union.addAll(getVariants(parentB));
 
-        ServerLevel serverLevel = (ServerLevel) child.level();
+        List<Variant> childVariants = new ArrayList<>(union);
         Registry<VariantGroup> groupRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
-        Registry<Variant> variantRegistry = child.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
-        ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
-
-        List<Variant> childVariants = collectVariants(
-                child, serverLevel, availableVariants, groupRegistry,
-                v -> aVariants.contains(v) || bVariants.contains(v),
-                false
-        );
 
         Map<ResourceLocation, List<Variant>> byGroup = new LinkedHashMap<>();
-        for (Variant variant : childVariants) {
-            variant.group().ifPresent(groupId ->
-                    byGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(variant));
+        for (Variant v : childVariants) {
+            v.group().ifPresent(groupId ->
+                    byGroup.computeIfAbsent(groupId, k -> new ArrayList<>()).add(v));
         }
         for (Map.Entry<ResourceLocation, List<Variant>> entry : byGroup.entrySet()) {
             VariantGroup group = groupRegistry.get(entry.getKey());
@@ -360,33 +331,22 @@ public class VariantUtil {
     }
 
     public static void validateVariants(Entity entity) {
-        List<Variant> oldVariants = getVariants(entity);
-        if (oldVariants.isEmpty()) return;
+        if (!entity.hasData(MLDataAttachmentTypes.VARIANTS)) return;
 
-        ArrayList<Variant> newVariants = new ArrayList<>(oldVariants);
+        List<ResourceLocation> storedIds = entity.getData(MLDataAttachmentTypes.VARIANTS);
+        Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
-        ServerLevel serverLevel = (ServerLevel) entity.level();
 
-        for (Variant variant : oldVariants) {
-            if (variant.group().isPresent()) {
-                VariantGroup group = groupRegistry.get(variant.group().get());
-                if (group == null) {
-                    newVariants.remove(variant);
-                    continue;
-                }
-                if (group.conditions().isPresent() && !group.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
-                    newVariants.remove(variant);
-                    continue;
-                }
-            }
-
-            if (variant.conditions().isPresent() && !variant.conditions().get().matchesPersistent(serverLevel, entity.position(), entity)) {
-                newVariants.remove(variant);
-            }
+        List<Variant> kept = new ArrayList<>(storedIds.size());
+        for (ResourceLocation id : storedIds) {
+            Variant variant = variantRegistry.get(id);
+            if (variant == null) continue;
+            if (variant.group().isPresent() && groupRegistry.get(variant.group().get()) == null) continue;
+            kept.add(variant);
         }
 
-        if (!newVariants.equals(oldVariants)) {
-            setVariants(entity, newVariants);
+        if (kept.size() != storedIds.size()) {
+            setVariants(entity, kept);
         }
     }
 

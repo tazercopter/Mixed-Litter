@@ -16,6 +16,7 @@ import net.neoforged.neoforge.registries.NewRegistryEvent;
 @Mod(MixedLitter.MODID)
 public class MixedLitter {
     public static final String MODID = "mixed_litter";
+    public static final ResourceLocation DEFAULT_GROUP = ResourceLocation.fromNamespaceAndPath(MODID, "default");
 
     // TODO variant holder interface injection
     // TODO better entity variant conditions

@@ -61,8 +61,7 @@ public abstract class SetMooshroomMushroomMixin {
 
             List<Variant> selectedVariants = VariantUtil.collectVariants(
                     self, level, availableVariants, variantGroupRegistry,
-                    v -> true,
-                    true
+                    v -> true
             );
 
             VariantUtil.applyExclusivity(selectedVariants, variantGroupRegistry, self.getRandom());
@@ -99,7 +98,7 @@ public abstract class SetMooshroomMushroomMixin {
                     self.discard();
                     cow.moveTo(self.getX(), self.getY(), self.getZ(), self.getYRot(), self.getXRot());
                     cow.setHealth(self.getHealth());
-                    cow.yBodyRot = self.yBodyRot;
+                    cow.setYBodyRot(self.yBodyRot);
                     cow.setInvulnerable(self.isInvulnerable());
                     if (self.isPersistenceRequired()) cow.setPersistenceRequired();
                     cow.setCustomName(self.getCustomName());

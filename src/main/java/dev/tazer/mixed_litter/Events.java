@@ -8,7 +8,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import static dev.tazer.mixed_litter.VariantUtil.*;
 
@@ -28,7 +27,9 @@ public class Events {
     @SubscribeEvent
     public static void onEntityLoaded(EntityJoinLevelEvent event) {
         if (event.getLevel() instanceof ServerLevel) {
-            validateVariants(event.getEntity());
+            Entity entity = event.getEntity();
+            if (getVariants(entity).isEmpty()) applySuitableVariants(entity);
+            else validateVariants(entity);
         }
     }
 
@@ -39,10 +40,5 @@ public class Events {
         if (child != null && !child.level().isClientSide) {
             setChildVariant(event.getParentA(), event.getParentB(), child);
         }
-    }
-
-    @SubscribeEvent
-    public static void updateVariant(EntityTickEvent.Pre event) {
-        if (!event.getEntity().level().isClientSide && event.getEntity().tickCount % 40 == 0) validateVariants(event.getEntity());
     }
 }
