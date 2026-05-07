@@ -2,10 +2,12 @@ package dev.tazer.mixed_litter;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.core.Registry;
@@ -16,15 +18,31 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static dev.tazer.mixed_litter.VariantUtil.*;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = MixedLitter.MODID)
 public class VariantCommand {
+
+    private static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_VARIANTS = (ctx, builder) -> {
+        Registry<Variant> reg = ctx.getSource().registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
+        return SharedSuggestionProvider.suggestResource(reg.keySet().stream(), builder);
+    };
+
+    private static final SuggestionProvider<CommandSourceStack> SUGGEST_TARGET_VARIANTS = (ctx, builder) -> {
+        Set<ResourceLocation> present = new HashSet<>();
+        try {
+            for (Entity entity : EntityArgument.getEntities(ctx, "targets")) {
+                if (entity.hasData(MLDataAttachmentTypes.VARIANTS)) {
+                    present.addAll(entity.getData(MLDataAttachmentTypes.VARIANTS));
+                }
+            }
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException ignored) {
+        }
+        return SharedSuggestionProvider.suggestResource(present.stream(), builder);
+    };
 
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
@@ -38,11 +56,13 @@ public class VariantCommand {
         root.then(Commands.literal("add")
                 .then(Commands.argument("targets", EntityArgument.entities())
                         .then(Commands.argument("variant", ResourceLocationArgument.id())
+                                .suggests(SUGGEST_ALL_VARIANTS)
                                 .executes(VariantCommand::add))));
 
         root.then(Commands.literal("remove")
                 .then(Commands.argument("targets", EntityArgument.entities())
                         .then(Commands.argument("variant", ResourceLocationArgument.id())
+                                .suggests(SUGGEST_TARGET_VARIANTS)
                                 .executes(VariantCommand::remove))));
 
         root.then(Commands.literal("clear")
@@ -81,7 +101,7 @@ public class VariantCommand {
             count++;
         }
         int applied = count;
-        ctx.getSource().sendSuccess(() -> Component.literal("Added " + id + " to " + applied + " entity(s)"), true);
+        ctx.getSource().sendSuccess(() -> Component.literal("Added " + id + " to " + applied + " entit" + (targets.size() > 1 ? "ies" : "y")), true);
         return count;
     }
 
@@ -100,7 +120,7 @@ public class VariantCommand {
             }
         }
         int applied = count;
-        ctx.getSource().sendSuccess(() -> Component.literal("Removed " + id + " from " + applied + " entity(s)"), true);
+        ctx.getSource().sendSuccess(() -> Component.literal("Removed " + id + " from " + applied + " entit" + (targets.size() > 1 ? "ies" : "y")), true);
         return count;
     }
 
@@ -109,7 +129,7 @@ public class VariantCommand {
         for (Entity entity : targets) {
             entity.removeData(MLDataAttachmentTypes.VARIANTS);
         }
-        ctx.getSource().sendSuccess(() -> Component.literal("Cleared variants on " + targets.size() + " entity(s)"), true);
+        ctx.getSource().sendSuccess(() -> Component.literal("Cleared variants on " + targets.size() + " entit" + (targets.size() > 1 ? "ies" : "y")), true);
         return targets.size();
     }
 
@@ -120,7 +140,7 @@ public class VariantCommand {
             entity.removeData(MLDataAttachmentTypes.VARIANTS);
             applySuitableVariants(entity);
         }
-        ctx.getSource().sendSuccess(() -> Component.literal("Rerolled variants on " + targets.size() + " entity(s)"), true);
+        ctx.getSource().sendSuccess(() -> Component.literal("Rerolled variants on " + targets.size() + " entit" + (targets.size() > 1 ? "ies" : "y")), true);
         return targets.size();
     }
 }

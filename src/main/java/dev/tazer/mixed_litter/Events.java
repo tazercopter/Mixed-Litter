@@ -28,8 +28,7 @@ public class Events {
     public static void onEntityLoaded(EntityJoinLevelEvent event) {
         if (event.getLevel() instanceof ServerLevel) {
             Entity entity = event.getEntity();
-            if (getVariants(entity).isEmpty()) applySuitableVariants(entity);
-            else validateVariants(entity);
+            validateVariants(entity);
         }
     }
 
