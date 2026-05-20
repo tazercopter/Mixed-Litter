@@ -331,11 +331,13 @@ public class VariantUtil {
     }
 
     public static void validateVariants(Entity entity) {
-        if (!entity.hasData(MLDataAttachmentTypes.VARIANTS)) return;
+        if (!(entity.level() instanceof ServerLevel serverLevel)) return;
 
-        List<ResourceLocation> storedIds = entity.getData(MLDataAttachmentTypes.VARIANTS);
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+
+        List<ResourceLocation> storedIds = entity.hasData(MLDataAttachmentTypes.VARIANTS)
+                ? entity.getData(MLDataAttachmentTypes.VARIANTS) : List.of();
 
         List<Variant> kept = new ArrayList<>(storedIds.size());
         for (ResourceLocation id : storedIds) {
@@ -347,6 +349,20 @@ public class VariantUtil {
 
         if (kept.size() != storedIds.size()) {
             setVariants(entity, kept);
+        }
+
+        boolean needsVariant = kept.isEmpty() || kept.stream().allMatch(v ->
+                v.group().isPresent() && v.group().get().equals(MixedLitter.DEFAULT_GROUP));
+
+        if (needsVariant) {
+            ArrayList<Holder<Variant>> availableVariants = new ArrayList<>(variantRegistry.holders().toList());
+            List<Variant> potential = collectVariants(entity, serverLevel, availableVariants, groupRegistry, v -> true);
+            boolean replacingApplies = potential.stream().anyMatch(v ->
+                    v.group().isPresent() && Optional.ofNullable(groupRegistry.get(v.group().get()))
+                            .map(VariantGroup::replaceDefault).orElse(false));
+            if (replacingApplies) {
+                applySuitableVariants(entity);
+            }
         }
     }
 
