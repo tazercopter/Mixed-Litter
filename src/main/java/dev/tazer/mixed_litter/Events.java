@@ -1,6 +1,6 @@
 package dev.tazer.mixed_litter;
 
-import net.minecraft.server.level.ServerLevel;
+import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,9 +26,13 @@ public class Events {
 
     @SubscribeEvent
     public static void onEntityLoaded(EntityJoinLevelEvent event) {
-        if (event.getLevel() instanceof ServerLevel) {
-            Entity entity = event.getEntity();
-            validateVariants(entity);
+        if (event.getLevel().isClientSide) return;
+        Entity entity = event.getEntity();
+
+        validateVariants(entity);
+
+        if (!event.loadedFromDisk() && !entity.hasData(MLDataAttachmentTypes.VARIANTS)) {
+            applySuitableVariants(entity);
         }
     }
 
