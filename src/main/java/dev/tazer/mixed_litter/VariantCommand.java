@@ -2,6 +2,7 @@ package dev.tazer.mixed_litter;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
@@ -22,7 +23,6 @@ import java.util.*;
 
 import static dev.tazer.mixed_litter.VariantUtil.*;
 
-@SuppressWarnings("unused")
 @EventBusSubscriber(modid = MixedLitter.MODID)
 public class VariantCommand {
 
@@ -39,7 +39,7 @@ public class VariantCommand {
                     present.addAll(entity.getData(MLDataAttachmentTypes.VARIANTS));
                 }
             }
-        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException ignored) {
+        } catch (CommandSyntaxException ignored) {
         }
         return SharedSuggestionProvider.suggestResource(present.stream(), builder);
     };
@@ -76,7 +76,7 @@ public class VariantCommand {
         event.getDispatcher().register(root);
     }
 
-    private static int get(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int get(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
         for (Entity entity : targets) {
             List<ResourceLocation> ids = entity.hasData(MLDataAttachmentTypes.VARIANTS)
@@ -87,7 +87,7 @@ public class VariantCommand {
         return targets.size();
     }
 
-    private static int add(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int add(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
         ResourceLocation id = ResourceLocationArgument.getId(ctx, "variant");
         int count = 0;
@@ -105,7 +105,7 @@ public class VariantCommand {
         return count;
     }
 
-    private static int remove(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int remove(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
         ResourceLocation id = ResourceLocationArgument.getId(ctx, "variant");
         int count = 0;
@@ -124,7 +124,7 @@ public class VariantCommand {
         return count;
     }
 
-    private static int clear(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int clear(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
         for (Entity entity : targets) {
             entity.removeData(MLDataAttachmentTypes.VARIANTS);
@@ -133,7 +133,7 @@ public class VariantCommand {
         return targets.size();
     }
 
-    private static int reroll(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int reroll(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         Collection<? extends Entity> targets = EntityArgument.getEntities(ctx, "targets");
         for (Entity entity : targets) {
             if (entity.level().isClientSide) continue;

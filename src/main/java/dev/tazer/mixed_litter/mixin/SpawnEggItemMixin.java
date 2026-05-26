@@ -15,13 +15,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-import static dev.tazer.mixed_litter.VariantUtil.setChildVariant;
+import static dev.tazer.mixed_litter.VariantUtil.applyChildVariants;
 
 @Mixin(SpawnEggItem.class)
 public class SpawnEggItemMixin {
     @Inject(method = "spawnOffspringFromSpawnEgg", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Mob;moveTo(DDDFF)V", shift = At.Shift.AFTER))
     private void setOffspringVariant(Player player, Mob p_mob, EntityType<? extends Mob> entityType, ServerLevel serverLevel, Vec3 pos, ItemStack stack, CallbackInfoReturnable<Optional<Mob>> cir, @Local(ordinal = 1) Mob mob) {
-        setChildVariant(p_mob, p_mob, mob);
+        applyChildVariants(p_mob, p_mob, mob);
     }
 
 }

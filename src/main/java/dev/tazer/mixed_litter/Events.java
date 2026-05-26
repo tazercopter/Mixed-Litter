@@ -41,7 +41,7 @@ public class Events {
         AgeableMob child = event.getChild();
 
         if (child != null && !child.level().isClientSide) {
-            setChildVariant(event.getParentA(), event.getParentB(), child);
+            applyChildVariants(event.getParentA(), event.getParentB(), child);
         }
     }
 }

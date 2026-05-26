@@ -303,7 +303,7 @@ public class VariantUtil {
         else entity.removeData(MLDataAttachmentTypes.VARIANTS);
     }
 
-    public static void setChildVariant(Entity parentA, Entity parentB, Entity child) {
+    public static void applyChildVariants(Entity parentA, Entity parentB, Entity child) {
         LinkedHashSet<Variant> union = new LinkedHashSet<>();
         union.addAll(getVariants(parentA));
         union.addAll(getVariants(parentB));
