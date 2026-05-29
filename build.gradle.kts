@@ -146,7 +146,7 @@ publishMods {
 
     modrinth {
         accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-        projectId = "mixed-litter"
+        projectId = "cU1kDASI"
         minecraftVersions.add(mc["version"])
     }
 }
