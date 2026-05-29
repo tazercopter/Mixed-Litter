@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "dev.tazer.mixed_litter.mixin",
-  "plugin": "com.moulberry.mixinconstraints.ConstraintsMixinPlugin",
+  "plugin": "dev.tazer.mixed_litter.mixin.plugin.MixedLitterMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "refmap": "mixed_litter.refmap.json",
   "mixins": [
