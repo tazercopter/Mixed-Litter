@@ -1,7 +1,4 @@
 {
-  "defaults": {
-    "remodel": ""
-  },
   "actions": [
     {
       "type": "mixed_litter:set_ageable_texture",
@@ -14,12 +11,6 @@
       "type": "mixed_litter:set_mooshroom_mushroom",
       "arguments": {
         "mushroom": "mushroom"
-      }
-    },
-    {
-      "type": "mixed_litter:set_remodel",
-      "arguments": {
-        "remodel": "remodel"
       }
     }
   ]

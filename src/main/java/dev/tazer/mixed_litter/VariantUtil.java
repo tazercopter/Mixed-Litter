@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.tazer.mixed_litter.actions.*;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
+import dev.tazer.mixed_litter.variants.EntityConditions;
 import dev.tazer.mixed_litter.variants.Variant;
 import dev.tazer.mixed_litter.variants.VariantGroup;
 import dev.tazer.mixed_litter.variants.VariantType;
@@ -49,8 +50,9 @@ public class VariantUtil {
         return null;
     }
 
-    public static ResourceLocation resolveTexture(Entity entity, ResourceLocation defaultTexture) {
+    public static ResourceLocation resolveTexture(Entity entity, ResourceLocation defaultTexture, boolean remodelActive) {
         for (Variant variant : getVariants(entity)) {
+            if (!remodelConditionMatches(entity, variant, remodelActive)) continue;
             VariantType variantType = getType(entity, variant);
             if (variantType == null) continue;
             JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
@@ -374,6 +376,18 @@ public class VariantUtil {
     public static @Nullable VariantType getType(Entity entity, Variant variant) {
         Registry<VariantType> variantTypeRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_TYPE_KEY);
         return variantTypeRegistry.get(variant.type());
+    }
+
+    private static boolean remodelConditionMatches(Entity entity, Variant variant, boolean remodelActive) {
+        if (!remodelConditionOk(variant.conditions(), remodelActive)) return false;
+        VariantGroup group = getGroup(entity, variant);
+        return group == null || remodelConditionOk(group.conditions(), remodelActive);
+    }
+
+    private static boolean remodelConditionOk(Optional<EntityConditions> conditions, boolean remodelActive) {
+        if (conditions.isEmpty()) return true;
+        Optional<Boolean> remodel = conditions.get().remodel();
+        return remodel.isEmpty() || remodel.get() == remodelActive;
     }
 
     private static JsonObject getEffectiveDefaults(Entity entity, Variant variant, VariantType variantType) {

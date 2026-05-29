@@ -1,7 +1,4 @@
 {
-  "defaults": {
-    "remodel": ""
-  },
   "actions": [
     {
       "type": "mixed_litter:replace_textures",
@@ -13,12 +10,6 @@
       "type": "mixed_litter:set_texture",
       "arguments": {
         "texture": "texture"
-      }
-    },
-    {
-      "type": "mixed_litter:set_remodel",
-      "arguments": {
-        "remodel": "remodel"
       }
     }
   ]

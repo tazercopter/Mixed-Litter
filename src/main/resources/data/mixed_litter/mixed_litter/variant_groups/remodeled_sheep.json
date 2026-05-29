@@ -1,17 +1,11 @@
 {
   "conditions": {
-    "remodel": {
-      "type": "sheep",
-      "status": true
-    },
+    "remodel": true,
     "entity_predicate": {
       "type": "sheep"
     }
   },
   "exclusive": true,
   "replace_default": true,
-  "selection": "weighted",
-  "defaults": {
-    "remodel": "sheep"
-  }
+  "selection": "weighted"
 }

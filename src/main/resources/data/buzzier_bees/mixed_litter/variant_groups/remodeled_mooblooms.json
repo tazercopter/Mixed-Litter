@@ -6,18 +6,12 @@
     }
   ],
   "conditions": {
-    "remodel": {
-      "type": "cow",
-      "status": true
-    },
+    "remodel": true,
     "entity_predicate": {
       "type": "buzzier_bees:moobloom"
     }
   },
   "exclusive": true,
   "replace_default": true,
-  "selection": "weighted",
-  "defaults": {
-    "remodel": "cow"
-  }
+  "selection": "weighted"
 }

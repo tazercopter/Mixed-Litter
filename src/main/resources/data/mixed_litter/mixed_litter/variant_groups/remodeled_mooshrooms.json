@@ -1,17 +1,11 @@
 {
   "conditions": {
-    "remodel": {
-      "type": "cow",
-      "status": true
-    },
+    "remodel": true,
     "entity_predicate": {
       "type": "mooshroom"
     }
   },
   "exclusive": true,
   "replace_default": true,
-  "selection": "weighted",
-  "defaults": {
-    "remodel": "cow"
-  }
+  "selection": "weighted"
 }

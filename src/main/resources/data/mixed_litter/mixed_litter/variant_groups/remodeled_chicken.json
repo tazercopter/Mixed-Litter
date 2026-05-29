@@ -1,17 +1,11 @@
 {
   "conditions": {
-    "remodel": {
-      "type": "chicken",
-      "status": true
-    },
+    "remodel": true,
     "entity_predicate": {
       "type": "chicken"
     }
   },
   "exclusive": true,
   "replace_default": true,
-  "selection": "weighted",
-  "defaults": {
-    "remodel": "chicken"
-  }
+  "selection": "weighted"
 }
