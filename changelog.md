@@ -1,1 +1,1 @@
-- Fixed many issues to do with remodels
+- Fixed chicken and squid animations
