@@ -4,10 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.SetMooshroomMushroom;
-import dev.tazer.mixed_litter.client.ModelLayers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.CowModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -21,12 +19,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T, CowModel<T>> {
     private final BlockRenderDispatcher blockRenderer;
-    private final CowRemodel<MushroomCow> cowRemodel;
 
-    public MooshroomMushroomLayer(RenderLayerParent<T, CowModel<T>> renderer, BlockRenderDispatcher blockRenderer, EntityModelSet modelSet) {
+    public MooshroomMushroomLayer(RenderLayerParent<T, CowModel<T>> renderer, BlockRenderDispatcher blockRenderer) {
         super(renderer);
         this.blockRenderer = blockRenderer;
-        cowRemodel = new CowRemodel<>(modelSet.bakeLayer(ModelLayers.COW_LAYER));
     }
 
     @Override
@@ -59,7 +55,7 @@ public class MooshroomMushroomLayer<T extends MushroomCow> extends RenderLayer<T
                     renderMushroomBlock(poseStack, buffer, packedLight, outlineOnly, blockstate, i, bakedmodel);
                     poseStack.popPose();
                     poseStack.pushPose();
-                    cowRemodel.getHead().translateAndRotate(poseStack);
+                    getParentModel().getHead().translateAndRotate(poseStack);
                     poseStack.translate(0, -0.6F, -0.2F);
                     poseStack.mulPose(Axis.YP.rotationDegrees(-78));
                     poseStack.scale(-1, -1, 1);

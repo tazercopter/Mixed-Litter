@@ -2,6 +2,7 @@ package dev.tazer.mixed_litter.client.models;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.tazer.mixed_litter.MixedLitter;
 import dev.tazer.mixed_litter.VariantUtil;
 import dev.tazer.mixed_litter.actions.SetSheepFurLayer;
 import net.minecraft.client.Minecraft;
@@ -20,6 +21,10 @@ import net.minecraft.world.item.DyeColor;
 
 public class SheepRemodelFurLayer extends SheepFurLayer {
 
+    private static final ResourceLocation DEFAULT_FUR = MixedLitter.location("textures/entity/sheep/sheep_fur.png");
+    private static final ResourceLocation DEFAULT_BABY_FUR = MixedLitter.location("textures/entity/sheep/sheep_baby_fur.png");
+    private static final ResourceLocation DEFAULT_SHEARED_FUR = MixedLitter.location("textures/entity/sheep/sheep_sheared_fur.png");
+
     public SheepRemodelFurLayer(RenderLayerParent<Sheep, SheepModel<Sheep>> renderer, EntityModelSet models) {
         super(renderer, models);
     }
@@ -33,8 +38,7 @@ public class SheepRemodelFurLayer extends SheepFurLayer {
         }
 
         if (furTexture == null) {
-            super.render(poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch);
-            return;
+            furTexture = sheep.isBaby() ? DEFAULT_BABY_FUR : sheep.isSheared() ? DEFAULT_SHEARED_FUR : DEFAULT_FUR;
         }
 
         EntityModel<Sheep> model = this.getParentModel();
@@ -42,8 +46,6 @@ public class SheepRemodelFurLayer extends SheepFurLayer {
             if (Minecraft.getInstance().shouldEntityAppearGlowing(sheep)) {
                 VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.outline(furTexture));
                 model.renderToBuffer(poseStack, vertexconsumer, packedLight, LivingEntityRenderer.getOverlayCoords(sheep, 0.0F), -16777216);
-            } else {
-                super.render(poseStack, buffer, packedLight, sheep, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch);
             }
             return;
         }

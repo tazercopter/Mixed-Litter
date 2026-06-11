@@ -17,7 +17,7 @@ public class MoobloomRemodelRenderer extends MobRenderer<Moobloom, CowModel<Moob
     public MoobloomRemodelRenderer(EntityRendererProvider.Context context, Function<Moobloom, ResourceLocation> texture) {
         super(context, new CowRemodel<>(context.bakeLayer(ModelLayers.COW_LAYER)), 0.7F);
         this.texture = texture;
-        addLayer(new MoobloomFlowerLayer<>(this, context.getModelSet()));
+        addLayer(new MoobloomFlowerLayer<>(this));
     }
 
     @Override

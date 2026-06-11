@@ -16,15 +16,88 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public class VariantUtil {
 
+    private static final Map<EntityType<?>, Boolean> TARGETED_TYPES = new ConcurrentHashMap<>();
+    private static final Map<EntityType<?>, List<Variant>> RENDER_FALLBACKS = new ConcurrentHashMap<>();
+
+    public static void invalidateCaches() {
+        TARGETED_TYPES.clear();
+        RENDER_FALLBACKS.clear();
+    }
+
     public static List<Variant> getVariants(Entity entity) {
         return entity.hasData(MLDataAttachmentTypes.VARIANTS) ? lookupVariantIds(entity.getData(MLDataAttachmentTypes.VARIANTS), entity.registryAccess()) : List.of();
+    }
+
+    public static boolean anyVariantTargets(Entity entity) {
+        return TARGETED_TYPES.computeIfAbsent(entity.getType(), type -> computeAnyVariantTargets(type, entity.registryAccess()));
+    }
+
+    private static boolean computeAnyVariantTargets(EntityType<?> type, RegistryAccess access) {
+        Registry<VariantGroup> groupRegistry = access.registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = access.registryOrThrow(MLRegistries.VARIANT_KEY);
+
+        for (Holder<Variant> holder : variantRegistry.holders().toList()) {
+            Variant variant = holder.value();
+            if (variant.group().isPresent()) {
+                if (variant.group().get().equals(MixedLitter.DEFAULT_GROUP)) continue;
+                VariantGroup group = groupRegistry.get(variant.group().get());
+                if (group == null) continue;
+                if (group.conditions().isPresent() && !group.conditions().get().typeCouldMatch(type)) continue;
+            }
+            if (variant.conditions().isPresent() && !variant.conditions().get().typeCouldMatch(type)) continue;
+            return true;
+        }
+
+        return false;
+    }
+
+    public static List<Variant> variantsForRendering(Entity entity) {
+        if (entity.hasData(MLDataAttachmentTypes.VARIANTS)) {
+            return lookupVariantIds(entity.getData(MLDataAttachmentTypes.VARIANTS), entity.registryAccess());
+        }
+        if (entity.level() == null || !entity.level().isClientSide) return List.of();
+        return RENDER_FALLBACKS.computeIfAbsent(entity.getType(), type -> computeRenderFallbacks(type, entity.registryAccess()));
+    }
+
+    private static List<Variant> computeRenderFallbacks(EntityType<?> type, RegistryAccess access) {
+        Registry<VariantGroup> groupRegistry = access.registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Registry<Variant> variantRegistry = access.registryOrThrow(MLRegistries.VARIANT_KEY);
+
+        Map<ResourceLocation, Variant> bestByGroup = new LinkedHashMap<>();
+        Map<ResourceLocation, Integer> bestWeight = new HashMap<>();
+
+        for (Holder<Variant> holder : variantRegistry.holders().toList()) {
+            Variant variant = holder.value();
+            if (variant.group().isEmpty() || variant.group().get().equals(MixedLitter.DEFAULT_GROUP)) continue;
+            ResourceLocation groupId = variant.group().get();
+            VariantGroup group = groupRegistry.get(groupId);
+            if (group == null || !group.replaceDefault()) continue;
+            if (!fallbackConditionsMatch(group.conditions(), type) || !fallbackConditionsMatch(variant.conditions(), type)) continue;
+
+            int weight = Optional.ofNullable(variant.arguments().get("weight"))
+                    .map(JsonElement::getAsInt).orElse(1);
+            Integer currentBest = bestWeight.get(groupId);
+            if (currentBest == null || weight > currentBest) {
+                bestByGroup.put(groupId, variant);
+                bestWeight.put(groupId, weight);
+            }
+        }
+
+        return List.copyOf(bestByGroup.values());
+    }
+
+    private static boolean fallbackConditionsMatch(Optional<EntityConditions> conditions, EntityType<?> type) {
+        if (conditions.isEmpty()) return true;
+        return conditions.get().clientEvaluable() && conditions.get().typeCouldMatch(type);
     }
 
     public static List<Variant> lookupVariantIds(List<ResourceLocation> variants, RegistryAccess access) {
@@ -37,7 +110,7 @@ public class VariantUtil {
     }
 
     public static <T extends VariantActionType> T findAction(Entity entity, Class<T> type) {
-        for (Variant variant : getVariants(entity)) {
+        for (Variant variant : variantsForRendering(entity)) {
             VariantType variantType = getType(entity, variant);
             if (variantType == null) continue;
             JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
@@ -51,7 +124,8 @@ public class VariantUtil {
     }
 
     public static ResourceLocation resolveTexture(Entity entity, ResourceLocation defaultTexture, boolean remodelActive) {
-        for (Variant variant : getVariants(entity)) {
+        List<Variant> variants = variantsForRendering(entity);
+        for (Variant variant : variants) {
             if (!remodelConditionMatches(entity, variant, remodelActive)) continue;
             VariantType variantType = getType(entity, variant);
             if (variantType == null) continue;
@@ -71,6 +145,10 @@ public class VariantUtil {
                     }
                 }
             }
+        }
+        if (remodelActive && variants.isEmpty()) {
+            ResourceLocation fallback = RemodelRegistry.fallbackTexture(entity);
+            if (fallback != null) return fallback;
         }
         return defaultTexture;
     }
@@ -266,6 +344,7 @@ public class VariantUtil {
     }
 
     public static void applySuitableVariants(Entity entity) {
+        if (!anyVariantTargets(entity)) return;
         ServerLevel serverLevel = (ServerLevel) entity.level();
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
@@ -334,6 +413,7 @@ public class VariantUtil {
 
     public static void validateVariants(Entity entity) {
         if (!(entity.level() instanceof ServerLevel serverLevel)) return;
+        if (!entity.hasData(MLDataAttachmentTypes.VARIANTS) && !anyVariantTargets(entity)) return;
 
         Registry<Variant> variantRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
         Registry<VariantGroup> groupRegistry = entity.registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
@@ -341,11 +421,13 @@ public class VariantUtil {
         List<ResourceLocation> storedIds = entity.hasData(MLDataAttachmentTypes.VARIANTS)
                 ? entity.getData(MLDataAttachmentTypes.VARIANTS) : List.of();
 
+        boolean remodelActive = RemodelRegistry.remodelActive(entity.getType());
         List<Variant> kept = new ArrayList<>(storedIds.size());
         for (ResourceLocation id : storedIds) {
             Variant variant = variantRegistry.get(id);
             if (variant == null) continue;
             if (variant.group().isPresent() && groupRegistry.get(variant.group().get()) == null) continue;
+            if (!remodelConditionMatches(entity, variant, remodelActive)) continue;
             kept.add(variant);
         }
 
@@ -366,6 +448,13 @@ public class VariantUtil {
                 applySuitableVariants(entity);
             }
         }
+    }
+
+    public static boolean isVariantSuitable(Entity entity, ServerLevel level, Variant variant, Registry<VariantGroup> groupRegistry) {
+        if (variant.conditions().isPresent() && !variant.conditions().get().matches(level, entity.position(), entity)) return false;
+        VariantGroup group = variant.group().map(groupRegistry::get).orElse(null);
+        return group == null || group.conditions().isEmpty()
+                || group.conditions().get().matches(level, entity.position(), entity);
     }
 
     public static @Nullable VariantGroup getGroup(Entity entity, Variant variant) {

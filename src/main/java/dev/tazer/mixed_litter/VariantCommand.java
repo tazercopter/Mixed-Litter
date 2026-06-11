@@ -6,14 +6,17 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import dev.tazer.mixed_litter.registry.MLDataAttachmentTypes;
 import dev.tazer.mixed_litter.variants.Variant;
+import dev.tazer.mixed_litter.variants.VariantGroup;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -26,9 +29,22 @@ import static dev.tazer.mixed_litter.VariantUtil.*;
 @EventBusSubscriber(modid = MixedLitter.MODID)
 public class VariantCommand {
 
-    private static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_VARIANTS = (ctx, builder) -> {
+    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SUITABLE_VARIANTS = (ctx, builder) -> {
         Registry<Variant> reg = ctx.getSource().registryAccess().registryOrThrow(MLRegistries.VARIANT_KEY);
-        return SharedSuggestionProvider.suggestResource(reg.keySet().stream(), builder);
+        Registry<VariantGroup> groupReg = ctx.getSource().registryAccess().registryOrThrow(MLRegistries.VARIANT_GROUP_KEY);
+        Set<ResourceLocation> suitable = new HashSet<>();
+        try {
+            for (Entity entity : EntityArgument.getEntities(ctx, "targets")) {
+                if (!(entity.level() instanceof ServerLevel level)) continue;
+                for (Holder.Reference<Variant> holder : reg.holders().toList()) {
+                    if (isVariantSuitable(entity, level, holder.value(), groupReg)) {
+                        holder.unwrapKey().ifPresent(key -> suitable.add(key.location()));
+                    }
+                }
+            }
+        } catch (CommandSyntaxException ignored) {
+        }
+        return SharedSuggestionProvider.suggestResource(suitable.stream(), builder);
     };
 
     private static final SuggestionProvider<CommandSourceStack> SUGGEST_TARGET_VARIANTS = (ctx, builder) -> {
@@ -56,7 +72,7 @@ public class VariantCommand {
         root.then(Commands.literal("add")
                 .then(Commands.argument("targets", EntityArgument.entities())
                         .then(Commands.argument("variant", ResourceLocationArgument.id())
-                                .suggests(SUGGEST_ALL_VARIANTS)
+                                .suggests(SUGGEST_SUITABLE_VARIANTS)
                                 .executes(VariantCommand::add))));
 
         root.then(Commands.literal("remove")

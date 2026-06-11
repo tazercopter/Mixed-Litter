@@ -3,10 +3,8 @@ package dev.tazer.mixed_litter.client.models;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.teamabnormals.buzzier_bees.common.entity.animal.Moobloom;
-import dev.tazer.mixed_litter.client.ModelLayers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.CowModel;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -15,11 +13,9 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class MoobloomFlowerLayer <T extends Moobloom> extends RenderLayer<T, CowModel<T>> {
-    private CowRemodel<Moobloom> cowRemodel;
 
-    public MoobloomFlowerLayer(RenderLayerParent<T, CowModel<T>> renderer, EntityModelSet modelSet) {
+    public MoobloomFlowerLayer(RenderLayerParent<T, CowModel<T>> renderer) {
         super(renderer);
-        cowRemodel = new CowRemodel<>(modelSet.bakeLayer(ModelLayers.COW_LAYER));
     }
 
     public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLightIn, T moobloom, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
@@ -44,7 +40,7 @@ public class MoobloomFlowerLayer <T extends Moobloom> extends RenderLayer<T, Cow
             dispatcher.renderSingleBlock(blockstate, poseStack, buffer, packedLightIn, i);
             poseStack.popPose();
             poseStack.pushPose();
-            cowRemodel.getHead().translateAndRotate(poseStack);
+            getParentModel().getHead().translateAndRotate(poseStack);
             poseStack.translate(0, -0.7F, -0.2F);
             poseStack.mulPose(Axis.YP.rotationDegrees(-78));
             poseStack.scale(-1, -1, 1);

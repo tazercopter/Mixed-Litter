@@ -1,1 +1,3 @@
-- Fixed chicken and squid animations
+- Improved performance for variantless mobs
+- Added default variant selection for remodeled mobs when rendering with insufficient context
+- Fixed moobloom model with Buzzier Bees

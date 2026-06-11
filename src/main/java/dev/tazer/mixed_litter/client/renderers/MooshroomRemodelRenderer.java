@@ -17,7 +17,7 @@ public class MooshroomRemodelRenderer extends MobRenderer<MushroomCow, CowModel<
     public MooshroomRemodelRenderer(EntityRendererProvider.Context context, Function<MushroomCow, ResourceLocation> texture) {
         super(context, new CowRemodel<>(context.bakeLayer(ModelLayers.COW_LAYER)), 0.7F);
         this.texture = texture;
-        addLayer(new MooshroomMushroomLayer<>(this, context.getBlockRenderDispatcher(), context.getModelSet()));
+        addLayer(new MooshroomMushroomLayer<>(this, context.getBlockRenderDispatcher()));
     }
 
     @Override

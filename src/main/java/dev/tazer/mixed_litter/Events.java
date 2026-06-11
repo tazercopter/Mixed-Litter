@@ -5,6 +5,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
@@ -14,6 +15,11 @@ import static dev.tazer.mixed_litter.VariantUtil.*;
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = MixedLitter.MODID)
 public class Events {
+
+    @SubscribeEvent
+    public static void onTagsUpdated(TagsUpdatedEvent event) {
+        invalidateCaches();
+    }
 
     @SubscribeEvent
     public static void onEntitySpawned(FinalizeSpawnEvent event) {
