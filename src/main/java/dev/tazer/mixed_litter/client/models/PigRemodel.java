@@ -3,6 +3,7 @@ package dev.tazer.mixed_litter.client.models;
 import net.minecraft.client.model.PigModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -19,6 +20,9 @@ public class PigRemodel<T extends Pig> extends PigModel<T> {
     private final ModelPart leftHindLegBaby;
     private final ModelPart rightEar;
     private final ModelPart leftEar;
+    private final ModelPart saddle;
+    private final ModelPart rightStirrup;
+    private final ModelPart leftStirrup;
 
     public PigRemodel(ModelPart root) {
         super(root);
@@ -29,6 +33,9 @@ public class PigRemodel<T extends Pig> extends PigModel<T> {
         leftHindLegBaby = headBaby.getChild("left_hind_leg_baby");
         rightEar = head.getChild("right_ear");
         leftEar = head.getChild("left_ear");
+        saddle = head.getChild("saddle");
+        rightStirrup = head.getChild("right_stirrup");
+        leftStirrup = head.getChild("left_stirrup");
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -47,6 +54,12 @@ public class PigRemodel<T extends Pig> extends PigModel<T> {
         head.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(36, 0).mirror().addBox(-1, 0, -2, 1, 4, 4).mirror(false), PartPose.offsetAndRotation(-5, -4, -6, 0, 0, 0.2443F));
 
         head.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(36, 0).addBox(0, 0, -2, 1, 4, 4), PartPose.offsetAndRotation(5, -4, -6, 0, 0, -0.2443F));
+
+        head.addOrReplaceChild("saddle", CubeListBuilder.create().texOffs(5, 34).addBox(-5, 0, -5.5F, 10, 0, 11, new CubeDeformation(0.02F, 0.0F, 0.0F)), PartPose.offset(0, -5.01F, 0));
+
+        head.addOrReplaceChild("right_stirrup", CubeListBuilder.create().texOffs(4, 48).addBox(-3, 0, 0, 6, 8, 0), PartPose.offsetAndRotation(-5.01F, -5, 0, 0, ((float) Math.PI / 2F), 0));
+
+        head.addOrReplaceChild("left_stirrup", CubeListBuilder.create().texOffs(32, 48).addBox(-3, 0, 0, 6, 8, 0), PartPose.offsetAndRotation(5.01F, -5, 0, 0, ((float) -Math.PI / 2F), 0));
 
         head.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(0, 7).addBox(0, -4.5F, 0, 0, 5, 4), PartPose.offset(0, -1.5F, 8));
 
@@ -99,6 +112,11 @@ public class PigRemodel<T extends Pig> extends PigModel<T> {
         leftHindLeg.xRot = Mth.cos(limbSwing * 0.6662F + 3.1415927F) * 1.7F * limbSwingAmount;
         rightFrontLeg.xRot = Mth.cos(limbSwing * 0.6662F + 3.1415927F) * 1.7F * limbSwingAmount;
         leftFrontLeg.xRot = Mth.cos(limbSwing * 0.6662F) * 1.7F * limbSwingAmount;
+
+        boolean saddled = pig.isSaddled();
+        saddle.visible = saddled;
+        rightStirrup.visible = saddled;
+        leftStirrup.visible = saddled;
 
         head.visible = !baby;
         leftHindLeg.visible = !baby;

@@ -45,6 +45,17 @@ public class RemodelRegistry {
         return remodelFor(type) != null;
     }
 
+    private static final Map<ResourceLocation, String> SPECIAL_TEXTURES = Map.of(
+            ResourceLocation.withDefaultNamespace("textures/entity/rabbit/toast.png"), "rabbit/rabbit_toast",
+            ResourceLocation.withDefaultNamespace("textures/entity/rabbit/caerbannog.png"), "rabbit/rabbit_killer"
+    );
+
+    public static ResourceLocation specialTexture(Entity entity, ResourceLocation vanillaTexture) {
+        if (remodelFor(entity.getType()) == null) return null;
+        String path = SPECIAL_TEXTURES.get(vanillaTexture);
+        return path == null ? null : MixedLitter.location("textures/entity/" + path + ".png");
+    }
+
     public static ResourceLocation fallbackTexture(Entity entity) {
         String remodel = remodelFor(entity.getType());
         if (remodel == null) return null;

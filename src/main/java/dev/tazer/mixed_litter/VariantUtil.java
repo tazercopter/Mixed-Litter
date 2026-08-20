@@ -27,10 +27,29 @@ public class VariantUtil {
 
     private static final Map<EntityType<?>, Boolean> TARGETED_TYPES = new ConcurrentHashMap<>();
     private static final Map<EntityType<?>, List<Variant>> RENDER_FALLBACKS = new ConcurrentHashMap<>();
+    private static final Map<Variant, List<VariantActionType>> RESOLVED_ACTIONS = new ConcurrentHashMap<>();
 
     public static void invalidateCaches() {
         TARGETED_TYPES.clear();
         RENDER_FALLBACKS.clear();
+        RESOLVED_ACTIONS.clear();
+    }
+
+    private static List<VariantActionType> resolvedActions(Entity entity, Variant variant) {
+        List<VariantActionType> cached = RESOLVED_ACTIONS.get(variant);
+        if (cached != null) return cached;
+
+        VariantType variantType = getType(entity, variant);
+        if (variantType == null) return List.of();
+
+        JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
+        List<VariantActionType> resolved = new ArrayList<>(variantType.actions().size());
+        for (Action action : variantType.actions())
+            resolved.add(action.type().resolve(action.arguments(), variant.arguments(), defaults));
+
+        List<VariantActionType> shared = List.copyOf(resolved);
+        RESOLVED_ACTIONS.put(variant, shared);
+        return shared;
     }
 
     public static List<Variant> getVariants(Entity entity) {
@@ -110,29 +129,21 @@ public class VariantUtil {
     }
 
     public static <T extends VariantActionType> T findAction(Entity entity, Class<T> type) {
-        for (Variant variant : variantsForRendering(entity)) {
-            VariantType variantType = getType(entity, variant);
-            if (variantType == null) continue;
-            JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
-            for (Action action : variantType.actions()) {
-                if (type.isInstance(action.type())) {
-                    return type.cast(action.type().resolve(action.arguments(), variant.arguments(), defaults));
-                }
-            }
-        }
+        for (Variant variant : variantsForRendering(entity))
+            for (VariantActionType resolved : resolvedActions(entity, variant))
+                if (type.isInstance(resolved)) return type.cast(resolved);
         return null;
     }
 
     public static ResourceLocation resolveTexture(Entity entity, ResourceLocation defaultTexture, boolean remodelActive) {
+        if (remodelActive) {
+            ResourceLocation special = RemodelRegistry.specialTexture(entity, defaultTexture);
+            if (special != null) return special;
+        }
         List<Variant> variants = variantsForRendering(entity);
         for (Variant variant : variants) {
             if (!remodelConditionMatches(entity, variant, remodelActive)) continue;
-            VariantType variantType = getType(entity, variant);
-            if (variantType == null) continue;
-            JsonObject defaults = getEffectiveDefaults(entity, variant, variantType);
-            for (Action action : variantType.actions()) {
-                VariantActionType resolved = action.type().resolve(action.arguments(), variant.arguments(), defaults);
-
+            for (VariantActionType resolved : resolvedActions(entity, variant)) {
                 if (resolved instanceof SetTexture setTexture) {
                     return setTexture.getTexture();
                 }
